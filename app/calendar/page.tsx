@@ -2,45 +2,69 @@
 
 import { useEffect, useState } from 'react'
 import { supabase, CronJob } from '@/lib/supabase'
+import { formatDistanceToNow } from 'date-fns'
 
-const agentColors: Record<string, string> = {
-  cody: 'bg-purple-500/20 border-purple-500/40 text-purple-300',
-  scout: 'bg-blue-500/20 border-blue-500/40 text-blue-300',
-  writer: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300',
-  tracker: 'bg-orange-500/20 border-orange-500/40 text-orange-300',
-  analyst: 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300',
+// Agent color configs
+const agentConfig: Record<string, { bg: string; border: string; text: string; dot: string }> = {
+  cody:    { bg: 'bg-emerald-500/15', border: 'border-emerald-500/30', text: 'text-emerald-300', dot: 'bg-emerald-500' },
+  scout:   { bg: 'bg-blue-500/15',    border: 'border-blue-500/30',    text: 'text-blue-300',    dot: 'bg-blue-500' },
+  writer:  { bg: 'bg-purple-500/15',  border: 'border-purple-500/30',  text: 'text-purple-300',  dot: 'bg-purple-500' },
+  tracker: { bg: 'bg-orange-500/15',  border: 'border-orange-500/30',  text: 'text-orange-300',  dot: 'bg-orange-500' },
+  analyst: { bg: 'bg-yellow-500/15',  border: 'border-yellow-500/30',  text: 'text-yellow-300',  dot: 'bg-yellow-500' },
 }
 
-const agentDotColors: Record<string, string> = {
-  cody: 'bg-purple-500',
-  scout: 'bg-blue-500',
-  writer: 'bg-emerald-500',
-  tracker: 'bg-orange-500',
-  analyst: 'bg-yellow-500',
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+// cron day-of-week: 0=Sun,1=Mon...6=Sat
+const CRON_DOW_TO_IDX: Record<number, number> = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6 }
+
+type RunResult = {
+  id: string
+  status: string
+  duration_ms: number | null
+  created_at: string
 }
 
-function parseCron(schedule: string): string {
+/** Parse a cron expression and return which day indices (Mon=0..Sun=6) this job runs */
+function getJobDays(schedule: string): number[] {
+  const parts = schedule.trim().split(/\s+/)
+  if (parts.length !== 5) return [0, 1, 2, 3, 4, 5, 6] // every day fallback
+  const dowField = parts[4]
+
+  if (dowField === '*') return [0, 1, 2, 3, 4, 5, 6]
+
+  // Handle ranges like 1-5
+  if (dowField.includes('-')) {
+    const [start, end] = dowField.split('-').map(Number)
+    const result: number[] = []
+    for (let d = start; d <= end; d++) {
+      const idx = CRON_DOW_TO_IDX[d]
+      if (idx !== undefined) result.push(idx)
+    }
+    return result
+  }
+
+  // Handle comma-separated
+  return dowField.split(',').map(Number).map((d) => CRON_DOW_TO_IDX[d]).filter((d) => d !== undefined)
+}
+
+function humanSchedule(schedule: string): string {
   const map: Record<string, string> = {
-    '*/30 * * * *': 'Every 30 minutes',
-    '0 6 * * *': 'Daily at 6:00 AM',
-    '0 7 * * 1': 'Mondays at 7:00 AM',
-    '0 8 * * *': 'Daily at 8:00 AM',
-    '0 9 * * 1-5': 'Weekdays at 9:00 AM',
+    '*/30 * * * *': 'Every 30 min',
+    '0 6 * * *': 'Daily 6:00 AM',
+    '0 7 * * 1': 'Mon 7:00 AM',
+    '0 8 * * *': 'Daily 8:00 AM',
+    '0 9 * * 1-5': 'Weekdays 9:00 AM',
     '0 */2 * * *': 'Every 2 hours',
-    '0 20 * * *': 'Daily at 8:00 PM',
+    '0 20 * * *': 'Daily 8:00 PM',
   }
   return map[schedule] || schedule
 }
 
-const timeSlots = [
-  '12am', '2am', '4am', '6am', '8am', '10am',
-  '12pm', '2pm', '4pm', '6pm', '8pm', '10pm',
-]
-
 export default function CalendarPage() {
   const [jobs, setJobs] = useState<CronJob[]>([])
-  const [selected, setSelected] = useState<CronJob | null>(null)
   const [loading, setLoading] = useState(true)
+  const [expandedJob, setExpandedJob] = useState<string | null>(null)
+  const [runResults, setRunResults] = useState<Record<string, RunResult[]>>({})
 
   useEffect(() => {
     supabase
@@ -53,140 +77,180 @@ export default function CalendarPage() {
       })
   }, [])
 
-  const agents = Array.from(new Set(jobs.map((j) => j.agent)))
+  const handleJobClick = async (jobId: string) => {
+    if (expandedJob === jobId) {
+      setExpandedJob(null)
+      return
+    }
+    setExpandedJob(jobId)
+
+    // Fetch last 5 run results
+    if (!runResults[jobId]) {
+      const { data } = await supabase
+        .from('agent_events')
+        .select('id, status, data, created_at')
+        .eq('agent', jobs.find((j) => j.id === jobId)?.agent || '')
+        .ilike('event', `%${jobs.find((j) => j.id === jobId)?.name || ''}%`)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (data) {
+        setRunResults((prev) => ({
+          ...prev,
+          [jobId]: data.map((e: any) => ({
+            id: e.id,
+            status: e.status,
+            duration_ms: e.data?.duration_ms || null,
+            created_at: e.created_at,
+          })),
+        }))
+      }
+    }
+  }
+
+  // Build grid: day -> jobs[]
+  const grid: Record<number, CronJob[]> = {}
+  for (let i = 0; i < 7; i++) grid[i] = []
+  jobs.forEach((job) => {
+    const days = getJobDays(job.schedule)
+    days.forEach((d) => {
+      if (!grid[d]) grid[d] = []
+      grid[d].push(job)
+    })
+  })
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-white">Calendar</h1>
-        <p className="text-sm text-gray-500 mt-0.5">All scheduled agent jobs — color coded by agent</p>
+        <p className="text-sm text-gray-500 mt-0.5">7-day schedule — click a job to see recent runs</p>
       </div>
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3">
-        {Object.entries(agentDotColors).map(([agent, color]) => (
+        {Object.entries(agentConfig).map(([agent, cfg]) => (
           <div key={agent} className="flex items-center gap-1.5">
-            <span className={`w-2.5 h-2.5 rounded-full ${color}`} />
+            <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
             <span className="text-xs text-gray-400 capitalize">{agent}</span>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Job list */}
-        <div className="lg:col-span-2 space-y-3">
-          {loading ? (
-            <div className="text-sm text-gray-500 py-8 text-center">Loading jobs...</div>
-          ) : jobs.length === 0 ? (
-            <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 text-center">
-              <p className="text-gray-500 text-sm">No cron jobs registered yet.</p>
-              <p className="text-gray-600 text-xs mt-1">Cody logs jobs to the cron_jobs table at startup.</p>
-            </div>
-          ) : (
-            agents.map((agent) => (
-              <div key={agent}>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 capitalize">
-                  {agent}
-                </p>
-                <div className="space-y-2">
-                  {jobs.filter((j) => j.agent === agent).map((job) => (
-                    <button
-                      key={job.id}
-                      onClick={() => setSelected(selected?.id === job.id ? null : job)}
-                      className={`w-full text-left rounded-xl p-3 border transition-all ${
-                        agentColors[agent] || 'bg-gray-800 border-gray-700 text-gray-300'
-                      } ${selected?.id === job.id ? 'ring-1 ring-white/20' : ''}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium">{job.name}</p>
-                          <p className="text-xs opacity-70 mt-0.5">{parseCron(job.schedule)}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs opacity-60">{job.run_count} runs</p>
+      {loading ? (
+        <div className="text-sm text-gray-500 py-8 text-center">Loading schedule...</div>
+      ) : jobs.length === 0 ? (
+        <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 text-center">
+          <p className="text-gray-500 text-sm">No cron jobs registered yet.</p>
+          <p className="text-gray-600 text-xs mt-1">Agents log their jobs to the cron_jobs table at startup.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-7 gap-2">
+          {DAYS.map((day, dayIdx) => (
+            <div key={day} className="min-w-0">
+              {/* Day header */}
+              <div className="text-center mb-2">
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{day}</span>
+              </div>
+
+              {/* Jobs for this day */}
+              <div className="space-y-1.5">
+                {grid[dayIdx].length === 0 ? (
+                  <div className="h-8 rounded-lg bg-gray-800/40 border border-gray-700/30" />
+                ) : (
+                  grid[dayIdx].map((job) => {
+                    const cfg = agentConfig[job.agent] || agentConfig.cody
+                    const isExpanded = expandedJob === job.id
+                    return (
+                      <div key={`${day}-${job.id}`}>
+                        <button
+                          onClick={() => handleJobClick(job.id)}
+                          className={`w-full text-left rounded-lg px-2 py-1.5 border transition-all text-xs ${cfg.bg} ${cfg.border} ${cfg.text} ${
+                            isExpanded ? 'ring-1 ring-white/20' : 'hover:brightness-125'
+                          }`}
+                        >
+                          <p className="font-medium truncate">{job.name}</p>
+                          <p className="opacity-60 text-[10px] truncate">{humanSchedule(job.schedule)}</p>
                           {job.last_status && (
-                            <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                              job.last_status === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                            <span className={`text-[10px] font-medium ${
+                              job.last_status === 'success' ? 'text-emerald-400' : 'text-red-400'
                             }`}>
-                              {job.last_status}
+                              {job.last_status === 'success' ? '✓' : '✗'}
                             </span>
                           )}
-                        </div>
-                      </div>
+                        </button>
 
-                      {/* Expanded detail */}
-                      {selected?.id === job.id && (
-                        <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
-                          <div className="flex justify-between text-xs">
-                            <span className="opacity-60">Schedule</span>
-                            <span className="font-mono">{job.schedule}</span>
+                        {/* Expanded: last 5 runs */}
+                        {isExpanded && (
+                          <div className={`mt-1 rounded-lg border p-2 text-xs ${cfg.bg} ${cfg.border}`}>
+                            <p className={`font-semibold mb-2 ${cfg.text}`}>Last runs</p>
+                            {!runResults[job.id] ? (
+                              <p className="text-gray-500">Loading...</p>
+                            ) : runResults[job.id].length === 0 ? (
+                              <p className="text-gray-500">No runs logged yet.</p>
+                            ) : (
+                              <div className="space-y-1">
+                                {runResults[job.id].map((run) => (
+                                  <div key={run.id} className="flex items-center gap-1">
+                                    <span className={run.status === 'error' ? 'text-red-400' : 'text-emerald-400'}>
+                                      {run.status === 'error' ? '✗' : '✓'}
+                                    </span>
+                                    <span className="text-gray-400 text-[10px]">
+                                      {formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}
+                                    </span>
+                                    {run.duration_ms && (
+                                      <span className="text-gray-600 text-[10px]">{run.duration_ms}ms</span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="opacity-60">Enabled</span>
-                            <span>{job.enabled ? '✅ Yes' : '⏸ No'}</span>
-                          </div>
-                          {job.last_run_at && (
-                            <div className="flex justify-between text-xs">
-                              <span className="opacity-60">Last run</span>
-                              <span>{new Date(job.last_run_at).toLocaleString()}</span>
-                            </div>
-                          )}
-                          {job.next_run_at && (
-                            <div className="flex justify-between text-xs">
-                              <span className="opacity-60">Next run</span>
-                              <span>{new Date(job.next_run_at).toLocaleString()}</span>
-                            </div>
-                          )}
-                          {job.last_duration_ms && (
-                            <div className="flex justify-between text-xs">
-                              <span className="opacity-60">Last duration</span>
-                              <span>{job.last_duration_ms}ms</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
+                        )}
+                      </div>
+                    )
+                  })
+                )}
               </div>
-            ))
-          )}
+            </div>
+          ))}
         </div>
+      )}
 
-        {/* Daily timeline */}
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-4">
-          <p className="text-sm font-semibold text-white mb-4">Today's Schedule</p>
-          <div className="space-y-2">
-            {timeSlots.map((slot) => {
-              const hour = slot.includes('am')
-                ? slot === '12am' ? 0 : parseInt(slot)
-                : slot === '12pm' ? 12 : parseInt(slot) + 12
-
-              const activeJobs = jobs.filter((j) => {
-                const parts = j.schedule.split(' ')
-                const jobHour = parseInt(parts[1])
-                return !isNaN(jobHour) && jobHour === hour
-              })
-
+      {/* Job list below grid for detail */}
+      {jobs.length > 0 && (
+        <div className="bg-gray-800 rounded-xl border border-gray-700">
+          <div className="px-4 py-3 border-b border-gray-700">
+            <p className="text-sm font-semibold text-white">All Jobs ({jobs.length})</p>
+          </div>
+          <div className="divide-y divide-gray-700/50">
+            {jobs.map((job) => {
+              const cfg = agentConfig[job.agent] || agentConfig.cody
               return (
-                <div key={slot} className="flex items-start gap-2">
-                  <span className="text-xs text-gray-600 w-10 shrink-0 mt-0.5">{slot}</span>
-                  <div className="flex-1 min-h-[20px]">
-                    {activeJobs.map((job) => (
-                      <div
-                        key={job.id}
-                        className={`text-xs px-2 py-0.5 rounded mb-0.5 border ${agentColors[job.agent] || 'bg-gray-700 border-gray-600 text-gray-300'}`}
-                      >
-                        {job.name}
-                      </div>
-                    ))}
+                <div key={job.id} className="px-4 py-3 flex items-center gap-4">
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white font-medium">{job.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 font-mono">{job.schedule} — {humanSchedule(job.schedule)}</p>
                   </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs text-gray-500">{job.run_count} runs</p>
+                    {job.last_status && (
+                      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                        job.last_status === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                      }`}>
+                        {job.last_status}
+                      </span>
+                    )}
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.border} ${cfg.text} capitalize`}>
+                    {job.agent}
+                  </span>
                 </div>
               )
             })}
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

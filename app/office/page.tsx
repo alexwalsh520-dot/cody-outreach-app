@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase, AgentEvent, AGENTS } from '@/lib/supabase'
 import AgentCard from '@/components/AgentCard'
-import ActivityFeed from '@/components/ActivityFeed'
 import { formatDistanceToNow } from 'date-fns'
 
 type AgentStatus = 'active' | 'idle' | 'error'
@@ -27,37 +26,59 @@ const defaultNextTasks: Record<string, string> = {
   analyst: 'Daily performance report — 8:00 PM',
 }
 
+function getStatus(event: AgentEvent | undefined): AgentStatus {
+  if (!event) return 'idle'
+  if (event.status === 'error') return 'error'
+  const age = Date.now() - new Date(event.created_at).getTime()
+  if (age < 5 * 60 * 1000) return 'active'   // < 5 min
+  if (age < 60 * 60 * 1000) return 'idle'    // < 1 hour
+  return 'idle'
+}
+
 function buildAgentStates(events: AgentEvent[]): AgentState[] {
   const latestByAgent: Record<string, AgentEvent> = {}
   events.forEach((e) => {
-    if (!latestByAgent[e.agent] || new Date(e.created_at) > new Date(latestByAgent[e.agent].created_at)) {
+    const existing = latestByAgent[e.agent]
+    if (!existing || new Date(e.created_at) > new Date(existing.created_at)) {
       latestByAgent[e.agent] = e
     }
   })
 
   return AGENTS.map((agent) => {
     const latest = latestByAgent[agent.id]
-    const isRecent = latest && (Date.now() - new Date(latest.created_at).getTime()) < 5 * 60 * 1000 // 5 min
-
-    let status: AgentStatus = 'idle'
-    if (latest?.status === 'error') status = 'error'
-    else if (isRecent) status = 'active'
-
     return {
       ...agent,
-      status,
+      status: getStatus(latest),
       lastAction: latest?.event || 'No recent activity',
-      lastActionTime: latest ? formatDistanceToNow(new Date(latest.created_at), { addSuffix: true }) : '',
+      lastActionTime: latest
+        ? formatDistanceToNow(new Date(latest.created_at), { addSuffix: true })
+        : '',
       nextTask: defaultNextTasks[agent.id] || 'Unscheduled',
     }
   })
 }
 
+const agentColors: Record<string, string> = {
+  cody: 'text-emerald-400',
+  scout: 'text-blue-400',
+  writer: 'text-purple-400',
+  tracker: 'text-orange-400',
+  analyst: 'text-yellow-400',
+}
+
 export default function OfficePage() {
   const [agentStates, setAgentStates] = useState<AgentState[]>(
-    AGENTS.map((a) => ({ ...a, status: 'idle' as AgentStatus, lastAction: 'No recent activity', lastActionTime: '', nextTask: defaultNextTasks[a.id] || '' }))
+    AGENTS.map((a) => ({
+      ...a,
+      status: 'idle' as AgentStatus,
+      lastAction: 'No recent activity',
+      lastActionTime: '',
+      nextTask: defaultNextTasks[a.id] || '',
+    }))
   )
+  const [feedEvents, setFeedEvents] = useState<AgentEvent[]>([])
   const [totalEvents, setTotalEvents] = useState(0)
+  const allEventsRef = useRef<AgentEvent[]>([])
 
   useEffect(() => {
     // Initial load
@@ -69,7 +90,10 @@ export default function OfficePage() {
         .limit(100)
 
       if (data) {
-        setAgentStates(buildAgentStates(data as AgentEvent[]))
+        const events = data as AgentEvent[]
+        allEventsRef.current = events
+        setAgentStates(buildAgentStates(events))
+        setFeedEvents(events.slice(0, 20))
         setTotalEvents(count || 0)
       }
     }
@@ -77,21 +101,17 @@ export default function OfficePage() {
 
     // Real-time subscription
     const channel = supabase
-      .channel('office_agent_events')
+      .channel('office_realtime')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'agent_events' },
-        async () => {
-          // Re-fetch latest events to rebuild agent states
-          const { data, count } = await supabase
-            .from('agent_events')
-            .select('*', { count: 'exact' })
-            .order('created_at', { ascending: false })
-            .limit(100)
-          if (data) {
-            setAgentStates(buildAgentStates(data as AgentEvent[]))
-            setTotalEvents(count || 0)
-          }
+        (payload) => {
+          const newEvent = payload.new as AgentEvent
+          // Prepend to our local state
+          allEventsRef.current = [newEvent, ...allEventsRef.current].slice(0, 100)
+          setAgentStates(buildAgentStates(allEventsRef.current))
+          setFeedEvents((prev) => [newEvent, ...prev].slice(0, 20))
+          setTotalEvents((prev) => prev + 1)
         }
       )
       .subscribe()
@@ -145,7 +165,44 @@ export default function OfficePage() {
       </div>
 
       {/* Live feed */}
-      <ActivityFeed maxItems={100} />
+      <div className="bg-gray-800 rounded-xl border border-gray-700">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+          <p className="text-sm font-semibold text-white">Live Activity Feed</p>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs text-gray-500">Real-time</span>
+          </div>
+        </div>
+        {feedEvents.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-gray-500 text-sm">No activity yet.</p>
+            <p className="text-gray-600 text-xs mt-1">Agent events will appear here in real-time as they run.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-700/50">
+            {feedEvents.map((event) => (
+              <div key={event.id} className="px-4 py-3 flex items-start gap-3">
+                <span className={`text-xs font-medium mt-0.5 capitalize shrink-0 w-16 ${agentColors[event.agent] || 'text-gray-400'}`}>
+                  {event.agent}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-300">{event.event}</p>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
+                  </p>
+                </div>
+                <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                  event.status === 'error' ? 'bg-red-500/20 text-red-400'
+                  : event.status === 'warning' ? 'bg-yellow-500/20 text-yellow-400'
+                  : 'bg-emerald-500/20 text-emerald-400'
+                }`}>
+                  {event.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -13,14 +13,20 @@ function StatPill({ label, value, accent = false }: { label: string; value: stri
 }
 
 function CampaignCard({ campaign }: { campaign: Campaign }) {
-  const openRate = campaign.emails_sent > 0 ? ((campaign.opens / campaign.emails_sent) * 100).toFixed(1) : '0.0'
-  const replyRate = campaign.emails_sent > 0 ? ((campaign.replies / campaign.emails_sent) * 100).toFixed(1) : '0.0'
-  const positiveReplyRate = campaign.replies > 0 ? ((campaign.positive_replies / campaign.replies) * 100).toFixed(1) : '0.0'
+  const openRate = campaign.emails_sent > 0
+    ? ((campaign.opens / campaign.emails_sent) * 100).toFixed(1)
+    : '0.0'
+  const replyRate = campaign.emails_sent > 0
+    ? ((campaign.replies / campaign.emails_sent) * 100).toFixed(1)
+    : '0.0'
+  const positiveReplyRate = campaign.replies > 0
+    ? ((campaign.positive_replies / campaign.replies) * 100).toFixed(1)
+    : '0.0'
 
-  const statusColors = {
-    active: 'bg-emerald-500/10 text-emerald-400',
-    paused: 'bg-yellow-500/10 text-yellow-400',
-    completed: 'bg-gray-500/10 text-gray-400',
+  const statusColors: Record<string, string> = {
+    active:    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    paused:    'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+    completed: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
   }
 
   return (
@@ -32,7 +38,9 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
             <p className="text-xs text-gray-500 mt-0.5">"{campaign.subject_line}"</p>
           )}
         </div>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${statusColors[campaign.status as keyof typeof statusColors] || statusColors.active}`}>
+        <span className={`text-xs px-2 py-0.5 rounded-full font-medium border shrink-0 ${
+          statusColors[campaign.status] || statusColors.active
+        }`}>
           {campaign.status}
         </span>
       </div>
@@ -56,7 +64,9 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
         </div>
         <div className="bg-gray-700/50 rounded-lg p-2 text-center">
           <p className="text-sm font-bold text-white">
-            {campaign.booked_calls > 0 ? `${Math.round((campaign.signed_clients / campaign.booked_calls) * 100)}%` : '—'}
+            {campaign.booked_calls > 0
+              ? `${Math.round((campaign.signed_clients / campaign.booked_calls) * 100)}%`
+              : '—'}
           </p>
           <p className="text-xs text-gray-500">Close rate</p>
         </div>
@@ -64,7 +74,7 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
 
       {campaign.notes && (
         <div className="bg-gray-700/40 rounded-lg p-3">
-          <p className="text-xs text-gray-500 mb-1 font-medium">🧠 Cody's notes</p>
+          <p className="text-xs text-gray-500 mb-1 font-medium">🧠 Notes</p>
           <p className="text-xs text-gray-300 leading-relaxed">{campaign.notes}</p>
         </div>
       )}
@@ -79,8 +89,10 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [syncResult, setSyncResult] = useState<string | null>(null)
 
-  useEffect(() => {
+  const loadCampaigns = () => {
     supabase
       .from('campaigns')
       .select('*')
@@ -89,7 +101,30 @@ export default function CampaignsPage() {
         if (data) setCampaigns(data as Campaign[])
         setLoading(false)
       })
+  }
+
+  useEffect(() => {
+    loadCampaigns()
   }, [])
+
+  const handleSmartleadSync = async () => {
+    setSyncing(true)
+    setSyncResult(null)
+    try {
+      const res = await fetch('/api/smartlead-sync', { method: 'POST' })
+      const json = await res.json()
+      if (json.ok) {
+        setSyncResult(`✅ Synced ${json.synced} campaigns from Smartlead`)
+        loadCampaigns()
+      } else {
+        setSyncResult(`❌ Sync failed: ${json.error}`)
+      }
+    } catch (err: any) {
+      setSyncResult(`❌ Error: ${err.message}`)
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   const active = campaigns.filter((c) => c.status === 'active')
   const inactive = campaigns.filter((c) => c.status !== 'active')
@@ -101,10 +136,40 @@ export default function CampaignsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-white">Campaigns</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Email campaigns managed by Writer</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white">Campaigns</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Email campaigns managed by Writer</p>
+        </div>
+        <button
+          onClick={handleSmartleadSync}
+          disabled={syncing}
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          {syncing ? (
+            <>
+              <span className="animate-spin text-xs">⟳</span>
+              Syncing...
+            </>
+          ) : (
+            <>
+              <span>⚡</span>
+              Sync from Smartlead
+            </>
+          )}
+        </button>
       </div>
+
+      {/* Sync result */}
+      {syncResult && (
+        <div className={`rounded-xl p-3 border text-sm ${
+          syncResult.startsWith('✅')
+            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+            : 'bg-red-500/10 border-red-500/20 text-red-300'
+        }`}>
+          {syncResult}
+        </div>
+      )}
 
       {/* Totals */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -130,8 +195,11 @@ export default function CampaignsPage() {
         <div className="text-sm text-gray-500 py-8 text-center">Loading campaigns...</div>
       ) : campaigns.length === 0 ? (
         <div className="bg-gray-800 rounded-xl p-12 border border-gray-700 text-center">
-          <p className="text-gray-400">No campaigns yet.</p>
-          <p className="text-gray-600 text-sm mt-1">Writer will create campaigns in Smartlead and log them here.</p>
+          <p className="text-3xl mb-3">📧</p>
+          <p className="text-gray-400 font-medium">No campaigns yet.</p>
+          <p className="text-gray-600 text-sm mt-1">
+            Click "Sync from Smartlead" to import campaigns, or Writer will create them and log here.
+          </p>
         </div>
       ) : (
         <>

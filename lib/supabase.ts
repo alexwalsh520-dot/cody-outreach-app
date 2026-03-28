@@ -77,6 +77,17 @@ export type CronJob = {
   created_at: string
 }
 
+export type Memory = {
+  id: string
+  agent: string
+  file_path: string
+  title: string
+  content: string
+  category: string
+  updated_at: string
+  created_at: string
+}
+
 // Agent definitions
 export const AGENTS = [
   { id: 'cody', name: 'Cody', emoji: '🧠', role: 'Orchestrator' },
