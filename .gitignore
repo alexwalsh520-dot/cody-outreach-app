@@ -34,3 +34,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+agents/*/tools/*.mjs
+agents/rex/pipeline/
+agents/rex/data/
+agents/rex/*.csv
+agents/rex/*.log
+agents/rex/package-lock.json
