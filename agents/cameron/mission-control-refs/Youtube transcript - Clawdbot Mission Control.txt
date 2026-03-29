@@ -1,0 +1,498 @@
+﻿# tactiq.io free youtube transcript
+# OpenClaw is 100x better with this tool (Mission Control)
+# https://www.youtube.com/watch/RhLpV6QDBFE
+
+
+00:00:00.160 I'm about to show you how to give your
+00:00:01.839 open claw superpowers. You need to build
+00:00:04.240 a mission control inside your Open Claw.
+00:00:06.879 And in this video, I'll show you how to
+00:00:08.320 do it in just a couple of prompts.
+00:00:10.080 Mission control is a custom dashboard
+00:00:12.080 for your OpenClaw that allows it to
+00:00:13.920 build any tool it needs on the fly. In
+00:00:16.480 this video, I'll take you through my
+00:00:18.080 entire mission control setup, every tool
+00:00:20.560 I use, and show you how to set up your
+00:00:22.640 own in just a couple of prompts. Zero
+00:00:24.800 programming experience needed, zero
+00:00:26.880 technical experience needed. If you
+00:00:28.640 stick with me until the end, I promise
+00:00:30.320 your open claw is going to be a hundred
+00:00:32.000 times more powerful no matter who you
+00:00:33.760 are. Let's get into it. If you're
+00:00:35.600 wondering about the different
+00:00:36.480 background, I'm reporting in straight
+00:00:38.000 from Shabuya. I'm going to take you
+00:00:39.840 through every critical mission control
+00:00:42.879 tool I have. This is my mission control.
+00:00:45.920 I truly believe everyone, no matter who
+00:00:48.800 you are, if you are using Open Claw, you
+00:00:51.120 need to be using mission control. This
+00:00:52.879 makes it so much better and also just a
+00:00:55.360 lot more fun to use. This is completely
+00:00:58.320 custom. This is a completely custom
+00:01:00.960 dashboard. All the tools you see on the
+00:01:02.879 lefth hand side were all built by my
+00:01:05.519 open claw. Nothing is out of the box.
+00:01:07.520 Nothing was downloaded from the web. All
+00:01:09.040 custom built and I didn't write a single
+00:01:10.400 line of code. The open claw made all of
+00:01:12.640 it. So here's what I'm going to do. I'm
+00:01:14.240 going to take you through every mission
+00:01:16.400 control tool. You need to have your open
+00:01:18.640 claw build. These will be relevant to
+00:01:20.640 everyone. I'm not going to go through
+00:01:22.000 every tool on the lefth hand side. Some
+00:01:23.439 of them are still experimental that I'm
+00:01:24.960 building out. We'll do follow-up videos
+00:01:26.560 with those. But the ones that work that
+00:01:28.320 are great and everyone should have them,
+00:01:30.080 I'm about to show you. And these were
+00:01:31.759 all built simply from me going to my
+00:01:34.479 open claw and saying, &quot;Hey, build me out
+00:01:36.400 a tool in my mission control that does
+00:01:37.840 this or build me out a tool in my
+00:01:39.360 mission control that shows my calendar
+00:01:40.880 or shows me what tasks I'm working on.&quot;
+00:01:42.799 Just one simple prompt and it was all
+00:01:44.720 built. If you'd like to build this out
+00:01:46.799 side by side with me as I go through all
+00:01:48.960 my tools, feel free to pause right now.
+00:01:51.439 go to your OpenClaw and say, &quot;Hey, I
+00:01:53.200 want my own mission control where we can
+00:01:55.040 build custom tools. Please build it in
+00:01:57.040 Nex.js and host it on the local host.&quot;
+00:01:59.439 Once you do that, it will build a
+00:02:00.960 template. You can also say make it a
+00:02:02.960 clean interface that looks like linear
+00:02:04.799 and you'll get a mission control that's
+00:02:06.320 as beautiful as this. So, let's go into
+00:02:08.000 it. Let's go into all the critical tools
+00:02:09.840 you need in your mission control. As you
+00:02:11.440 go, feel free to pause and describe each
+00:02:13.120 tool and your open claw will do it. So,
+00:02:14.640 I want to start off on the task board. I
+00:02:16.879 think this is a critical critical tool.
+00:02:18.879 This taskboard makes it so easy for me
+00:02:21.120 to track everything my Open Claw is
+00:02:23.520 doing. I can see what Henry's working
+00:02:25.360 on. I can see what Henry's sub agents
+00:02:27.280 are working on. I'm always on top of
+00:02:29.120 what they're doing. This solves a lot of
+00:02:30.879 problems. This solves the biggest
+00:02:32.160 problem where people go, &quot;Oh, I don't
+00:02:33.200 know what my open claw is doing. I don't
+00:02:34.319 know what it completed. I don't know if
+00:02:35.519 it's halfway done tasks.&quot; You don't have
+00:02:37.200 visibility into what your open claw did.
+00:02:39.280 Now, with this task board, you know
+00:02:41.040 everything your open claw is doing and
+00:02:42.640 what it's accomplished. So you can see
+00:02:44.239 here it is a simple cananband board
+00:02:45.840 where every task is on here is assigned
+00:02:48.080 to either me or Henry. You can see the A
+00:02:50.800 is for me, the H is for Henry. It shows
+00:02:52.800 a description of the task and really
+00:02:54.959 important is over on the left hand side
+00:02:57.040 is a live activity feed which allows me
+00:02:59.840 to see every single thing Henry is doing
+00:03:02.560 in detail. So this just allows me to
+00:03:04.560 confirm Henry is doing the work he's
+00:03:06.400 saying he's doing. As Henry does the
+00:03:08.400 work, he moves the tasks over on the
+00:03:10.640 board towards the right until it's done.
+00:03:12.480 Anything that needs to be reviewed by me
+00:03:14.640 is right in review and I can go and just
+00:03:16.640 approve it. Just a great way to manage
+00:03:18.800 and track everything your open claw
+00:03:20.720 does. If you need to add new tasks, you
+00:03:22.640 can hit new task and if you assign it to
+00:03:24.480 Henry or your openclaw, your open claw
+00:03:26.800 will automatically find that and do the
+00:03:29.120 task for you. What I did was I asked my
+00:03:31.200 openclaw that in every heartbeat check
+00:03:33.440 our task board, see if any tasks are
+00:03:35.920 assigned to my openclaw in the backlog
+00:03:38.319 and then do any tasks that are assigned
+00:03:39.840 to them. So, every heartbeat is checking
+00:03:41.680 this task board to see if any tasks are
+00:03:43.360 assigned and getting it done
+00:03:44.720 autonomously. This increased my
+00:03:46.720 efficiency and also just keeps me on top
+00:03:48.799 of whatever Henry is doing. Make sure to
+00:03:51.200 build this task board. Just describe
+00:03:52.959 what I showed to you and your agent will
+00:03:54.799 build it for you. No coding at all. The
+00:03:56.799 next screen I want to show you is one of
+00:03:58.560 the most important ones I'll show you.
+00:04:00.080 This is the calendar screen. And the
+00:04:01.920 reason why this is so powerful is it
+00:04:04.400 shows you what cron jobs and what tasks
+00:04:07.280 you have scheduled for your open claw.
+00:04:09.439 One of the biggest complaints I get
+00:04:11.120 about OpenClaw is that it's not
+00:04:13.120 proactive enough. That it's not doing
+00:04:14.799 proactive tasks for the users. This
+00:04:16.959 allows you to confirm that your OpenClaw
+00:04:19.279 is being proactive. Whenever you say,
+00:04:21.279 &quot;Hey, do something for me at night. Do
+00:04:23.040 something for me every morning. Do
+00:04:24.560 something productive every afternoon.&quot;
+00:04:26.560 You can come to your calendar screen and
+00:04:28.800 see and confirm that your open claw
+00:04:31.440 scheduled those cron jobs to do those
+00:04:33.199 tasks. There's an issue I've been seeing
+00:04:34.639 with people. Some open clauses, they
+00:04:35.840 say, &quot;Hey, I'll do that for you.&quot; and
+00:04:37.199 then they never actually do those
+00:04:38.720 things. This calendar is a great way to
+00:04:40.800 confirm it. And this also puts you and
+00:04:42.639 your open claw on the same page where
+00:04:44.639 you can say after scheduling a task,
+00:04:46.880 hey, you said you scheduled a task, but
+00:04:48.320 I don't see it on the calendar. Now
+00:04:49.919 you're open go confirm it's on the
+00:04:51.759 calendar and make sure it's actually
+00:04:53.759 scheduling its own tasks. The more you
+00:04:56.000 use OpenClaw, the more scheduled tasks
+00:04:58.000 you'll have. This helps you stay on top
+00:04:59.759 of all of them and make sure your
+00:05:01.199 OpenClaw is being proactive. ask for it
+00:05:03.520 to build a calendar for you that shows
+00:05:05.520 all the crown jobs and scheduled tasks
+00:05:07.360 it have and you will have an amazing
+00:05:09.280 screen like this. Next is the project
+00:05:12.000 screen. So this is a really good one for
+00:05:14.479 tracking every project you're working
+00:05:16.800 on. It's very easy to get distracted
+00:05:19.120 with Open Claw, play around, build
+00:05:21.039 things you don't really need and not
+00:05:22.479 stay on top of the tasks that actually
+00:05:24.160 move the ball forward. This project
+00:05:26.320 screen is good for that. You go in here,
+00:05:28.639 have your open claw build a project for
+00:05:30.639 every single major project you have
+00:05:32.880 going on in your life. And now when you
+00:05:34.960 get scatterbrained, you can come back
+00:05:36.400 into this project screen. See how close
+00:05:38.720 you are to completing those projects and
+00:05:40.560 go and pay attention to the ones that
+00:05:42.160 maybe you haven't worked on in a while.
+00:05:44.240 Right? If I'm looking at this, I might
+00:05:45.600 want to go, okay, I want to build out
+00:05:47.280 the AI extension for my school. By the
+00:05:49.520 way, Vibe Coding Academy live boot camps
+00:05:52.000 every single Friday in that. Sign up for
+00:05:54.000 that down below. I did an entire
+00:05:55.520 two-hour boot camp on this mission
+00:05:56.880 control. You get instant access to that.
+00:05:58.400 Anyway, the project screen, which you
+00:06:00.320 see here, is just a great way to make
+00:06:02.000 sure every single day you're progressing
+00:06:03.919 on the major high lever tasks you're
+00:06:06.080 working on. And what's great is this
+00:06:07.840 hooks into all my other screens. So, I'm
+00:06:10.080 about to show you a lot of really cool
+00:06:11.840 things in a second when it comes to
+00:06:13.360 memories and documents, but this allows
+00:06:15.440 you to hook in task, memories, documents
+00:06:17.520 to every project you're working on. Just
+00:06:19.600 an amazing way to stay organized.
+00:06:22.479 And a little bonus tip here, this is a
+00:06:24.639 great way to go and reverse prompt your
+00:06:26.720 open claw and say something like, &quot;Hey,
+00:06:28.720 what's one task we can do right now that
+00:06:31.039 will help us progress in one of our
+00:06:32.800 major projects?&quot; And it will come up
+00:06:34.960 with tasks to do that help you advance
+00:06:36.800 in these projects. So great reverse
+00:06:38.960 prompting opportunity. I talk about
+00:06:40.720 reverse prompting all the time, asking
+00:06:42.400 your open claw questions. Great reverse
+00:06:44.720 prompting opportunity on this screen,
+00:06:46.639 too. Have to make a project screen. And
+00:06:48.800 if you don't know which projects you're
+00:06:50.000 working on, that's fine, too. Go to your
+00:06:51.440 openclaw reverse prompt. If you were to
+00:06:53.440 categorize five projects we're working
+00:06:55.120 on right now, openclaw, what would you
+00:06:57.039 say those five projects are? And it will
+00:06:59.039 figure them out for you. You don't even
+00:07:00.319 have to think. Whenever you get
+00:07:01.440 confused, reverse prompt. Next is the
+00:07:04.000 memory screen. This is a critical
+00:07:06.080 critical tool to implement. One of the
+00:07:08.319 best parts about OpenClaw is its memory
+00:07:10.639 system. It has an amazing memory system
+00:07:12.880 where it remembers basically all your
+00:07:14.400 conversations from every single day. One
+00:07:16.639 thing I like to do often is go back and
+00:07:18.880 go through those memories almost like a
+00:07:20.720 journal entry and see what we talked
+00:07:22.639 about on certain days. Or if I'm working
+00:07:24.880 on something and I forget details of
+00:07:26.800 past conversations, I can come back and
+00:07:28.880 look at past memories, too. That's all
+00:07:31.039 done on this memory screen. Typically,
+00:07:33.440 your memories are stuck in a unorganized
+00:07:36.800 memories.mmarkdown file that's really
+00:07:38.800 hard to find and read. This makes it
+00:07:41.039 really easy to find any past memories,
+00:07:43.280 organize them, and almost read them like
+00:07:44.960 a journal. I can't wait 10 years from
+00:07:46.800 now when I can go back, look at what I
+00:07:49.039 was talking about with Henry from 10
+00:07:51.120 years ago, see what we're working on,
+00:07:52.560 see what we're talking about, and
+00:07:53.680 basically just use these memories as a
+00:07:56.080 tracker of my entire life. That's what
+00:07:58.160 this memory screen allows you to do. So,
+00:07:59.919 what you want to do is you want to go
+00:08:02.000 into your open claw. I want a memory
+00:08:04.080 screen in our mission control that
+00:08:05.680 allows me to view every memory you have
+00:08:07.759 organized by day. Build that out for me,
+00:08:10.160 please. and also have a long-term memory
+00:08:12.479 document that allows me to see all the
+00:08:14.479 long-term memories we have as well. This
+00:08:16.479 is just great for finding old thoughts
+00:08:18.160 and old conversations you were having
+00:08:20.080 and seeing what you were talking about
+00:08:21.680 on specific days. It's basically a
+00:08:23.680 record of your entire digital life. It's
+00:08:25.599 amazing. Build the memory screen just
+00:08:27.599 for pure organization sake. This next
+00:08:29.520 screen I'm going to talk about is
+00:08:30.800 extremely important. It's very similar
+00:08:32.479 to memories, but equally, if not more
+00:08:34.240 important, and that is the doc screen.
+00:08:36.080 If you're anything like me, your open
+00:08:38.159 claw is constantly building you docs,
+00:08:40.159 planning docs, architecture docs,
+00:08:42.159 product requirement docs. It's writing
+00:08:44.080 you newsletters. It's writing you
+00:08:45.440 content and just writing a whole bunch
+00:08:46.959 of things for you. Unfortunately, that
+00:08:48.880 usually lives in your chat. So, if you
+00:08:50.800 want to find an old document, you have
+00:08:52.320 to scroll back in your chat in your
+00:08:54.000 Telegram or Discord for a while, but not
+00:08:56.080 with this doc screen. This doc screen is
+00:08:58.640 so so helpful. every doc your open claw
+00:09:01.920 creates goes into this doc screen and
+00:09:04.160 allows you to go back and see every
+00:09:06.640 document it's created in a really nicely
+00:09:08.880 formatted way. So for instance, every
+00:09:10.800 Thursday I have my open claw write me my
+00:09:13.680 newsletter I'm going to send out. I
+00:09:15.040 don't just send out straight with
+00:09:16.160 whatever my openclaw wrote, but I use it
+00:09:17.760 as a first draft. So when I go back and
+00:09:19.600 I want to send out my newsletter, I can
+00:09:21.519 go in here. I can search for the draft
+00:09:24.320 of the newsletter. I can copy and paste
+00:09:26.480 this newsletter draft into Substack,
+00:09:28.720 edit it myself, and then send it out
+00:09:30.720 instead of having to scroll back for 10
+00:09:32.880 minutes to find this draft. Everything
+00:09:34.800 is just stored in this documents tool.
+00:09:37.040 And what's great is it automatically
+00:09:38.880 categorizes it, shows me what formats
+00:09:41.519 each document is in. It's really
+00:09:43.120 organizable. And I can even search. So,
+00:09:45.040 if I want to see which files have Mac
+00:09:47.600 Studio mentioned in it, because I do a
+00:09:49.040 bunch of Mac Studio planning with all my
+00:09:51.040 computers, I can just search for it and
+00:09:52.720 find those documents really, really
+00:09:54.480 easily. Go to your open claw and say, I
+00:09:56.880 want a docs tool where I can go back and
+00:09:59.200 view all the previous documents you
+00:10:01.360 created for me in a nicely formatted
+00:10:03.839 view. Make it searchable and categorize
+00:10:06.000 the documents. If you put in that
+00:10:07.440 prompt, you'll have an amazing documents
+00:10:09.120 tool ready to go. I have two more tools
+00:10:11.040 to show you that I'm going to show you
+00:10:12.399 how to actually find which custom tools
+00:10:14.480 you need to build for yourself that I
+00:10:16.160 haven't shown here. If you learned
+00:10:17.920 anything so far, make sure to leave a
+00:10:20.240 like down below. Subscribe and turn on
+00:10:22.560 notifications. Every person that turns
+00:10:24.959 on notifications will be another piece
+00:10:27.519 of sushi I eat here in Japan. This next
+00:10:30.079 screen is my favorite. I think it is the
+00:10:32.399 most important. It keeps your OpenClaw
+00:10:34.640 agent on task with one mission in mind
+00:10:37.120 and keeps it organized with all its sub
+00:10:39.040 agents it's working with and that is the
+00:10:40.880 team screen. This team screen shows me
+00:10:43.760 every agent I have spun up, every sub
+00:10:46.240 aent it uses, what their roles are and
+00:10:49.279 our mission statement. This is like our
+00:10:51.680 org structure for the digital company
+00:10:54.160 we're running. So at the top you can see
+00:10:56.240 the main open claw Henry what his role
+00:10:58.720 is and then we can see all the other
+00:11:00.720 open claws and sub aents we've spun up.
+00:11:03.040 It shows what devices they're on. It
+00:11:04.399 shows what roles they have. Right? I
+00:11:06.000 have Charlie who's my engineer. This is
+00:11:08.000 run by Quen locally on my Mac Studio. We
+00:11:10.240 have Ralph. This is powered by Chad GBT.
+00:11:12.720 We have all the different sub aents. And
+00:11:14.640 then we have the lowest level worker
+00:11:16.480 agents. This helps keep my agents
+00:11:18.959 organized where they know who to spin up
+00:11:20.800 and who to give work to. Again, another
+00:11:23.360 place that's kind of the record of truth
+00:11:26.160 where if an agent gets confused or
+00:11:27.920 doesn't remember who should be working
+00:11:29.120 on what, it can go to the team screen,
+00:11:30.880 say, &quot;Oh, okay. I got to give this to
+00:11:32.160 Charlie for development. I got to give
+00:11:33.600 this Violet for research.&quot; And it helps
+00:11:35.680 keep all your agents organized. By the
+00:11:37.760 way, if you want a follow-up video on
+00:11:38.800 when you should use sub agents versus
+00:11:40.240 open clause, let me know down below. I
+00:11:42.320 could make that my next video if there's
+00:11:43.680 enough demand for that. But a really
+00:11:45.519 important part of the screen as well is
+00:11:47.279 the mission statement, which I put at
+00:11:49.360 the top here. You should have a mission
+00:11:51.360 statement for your open claw. This is
+00:11:53.920 the mission everyone is working towards
+00:11:56.160 at the same time. This makes it so
+00:11:57.839 whenever your open claws come up with
+00:11:59.600 tasks to work on, they ensure that there
+00:12:01.680 are tasks that bring you closer to your
+00:12:04.000 goals and ambitions. So for me, my
+00:12:06.000 mission statement is I want to build an
+00:12:08.000 autonomous organization of AI agents
+00:12:10.320 that do work for me and produce value
+00:12:12.399 247. Everything we do, I want to get
+00:12:15.519 closer to that. And the best part is is
+00:12:17.760 I can use reverse prompting here. So
+00:12:19.839 when my agents are idle, I can say,
+00:12:21.760 &quot;What task can we do right now that
+00:12:24.079 brings us closer to our mission
+00:12:26.000 statement?&quot; You want a mission statement
+00:12:27.839 as well. If you don't know what you're
+00:12:29.680 working towards with your open clause,
+00:12:31.360 reverse prompt based on everything you
+00:12:33.440 know about me. What should be our
+00:12:35.519 mission statement? That will give you a
+00:12:37.279 mission statement you can work towards
+00:12:38.800 and it makes it so all the proactive
+00:12:40.639 tasks your open clause do brings you
+00:12:42.880 closer to that goal. Lastly, I want to
+00:12:45.360 talk about the office screen. And you
+00:12:47.440 might see this and go, &quot;What the hell is
+00:12:49.279 this? Do I really need this? Is there
+00:12:50.959 any point to this?&quot; The answer to all
+00:12:52.639 those questions is yes, you do need
+00:12:54.079 this. And there is a point to this. This
+00:12:56.240 is a visual that shows me what all my
+00:12:59.519 agents are working on. So, as my agents
+00:13:02.000 work, they'll go to their different
+00:13:03.120 screens. They'll go to the desk.
+00:13:04.399 Sometimes they'll even talk to each
+00:13:05.600 other and meet around the water cooler.
+00:13:07.440 This is a great place to track what your
+00:13:09.680 agents are doing. If I need to confirm
+00:13:11.920 my agent's actually doing something at
+00:13:13.519 any given moment, I can come here and
+00:13:15.279 see if they're working on their computer
+00:13:16.880 and see what they're actually working
+00:13:18.480 on, too. Here's an important point I
+00:13:20.880 want to make here is when using
+00:13:22.720 OpenClaw, it is critical, critical,
+00:13:24.720 critical you have fun. There is nothing
+00:13:27.200 wrong with having fun when you use
+00:13:28.959 OpenClaw. Nothing at all. I like to have
+00:13:31.120 fun. This is really fun for me. This
+00:13:33.120 makes me want to come back to my open
+00:13:34.560 claw more and do more work and get more
+00:13:36.639 done just cuz it's a fun thing to do.
+00:13:38.800 Not everything has to be a boring CLI.
+00:13:41.279 It could be an actual fun 2D interface
+00:13:43.440 where you watch agents walk around and
+00:13:45.040 do work. What I would do is I'd go to
+00:13:46.800 your OpenClaw, say, &quot;Hey, I want a
+00:13:48.800 screen that visualizes all the work
+00:13:50.720 you're doing. I want a 2D pixel art
+00:13:53.120 office that shows you and all the sub
+00:13:55.279 agents. I want them to have desks and
+00:13:57.440 when they are doing work, they go to
+00:13:58.880 their desk and actually do the work.&quot; If
+00:14:00.639 you put that prompt in, it will build
+00:14:02.240 something similar to this. If you want,
+00:14:03.760 you can even pause here and screenshot
+00:14:05.680 this. any screen I showed you so far,
+00:14:07.920 feel free to screenshot it and give it
+00:14:09.519 to your open claw, and it will build it
+00:14:11.440 to look like whatever I built. You can
+00:14:13.600 also just take the link for this video,
+00:14:15.519 too, and give it to your open claw.
+00:14:17.199 It'll find the transcript and build out
+00:14:19.040 everything I said. That's that's
+00:14:20.160 probably the easiest way for you to use
+00:14:21.519 this video. But here's a really
+00:14:23.360 important note I want to make on
+00:14:24.800 everything I showed you so far. I don't
+00:14:26.880 want you to just straight up copy me.
+00:14:28.639 It's not that I care if people copy me.
+00:14:30.320 You can copy anything I do. I don't
+00:14:31.760 care. But the reason why I think you
+00:14:34.240 should avoid copying me is because this
+00:14:36.720 is a hyperpersonalized
+00:14:38.800 for you dashboard. The tools should all
+00:14:41.519 be useful for you. You shouldn't just
+00:14:43.519 take other people's tools, put them in,
+00:14:45.760 and then use their workflows. No two
+00:14:47.600 people's workflows are the same. So,
+00:14:49.680 it's important you come up with your own
+00:14:51.680 custom tools. How do you do that? Well,
+00:14:54.079 the answer is probably not going to
+00:14:55.199 surprise you. Reverse prompting. After
+00:14:58.000 you build out the initial version of
+00:15:00.480 your mission control, you should go in
+00:15:02.959 and reverse prompt your open claw based
+00:15:05.120 on what you know about me, what we've
+00:15:07.120 done, our workflows, our mission
+00:15:09.440 statement, our goals. What custom tools
+00:15:12.720 should we build out in our mission
+00:15:14.560 control? What that'll do is cause your
+00:15:16.399 open claw to think for a while and come
+00:15:18.160 up with the custom tools you need to
+00:15:20.240 make your workflows easier. This will
+00:15:22.720 build custom tools that are way more
+00:15:24.800 relevant for whatever you're doing than
+00:15:26.639 anything I show you. You can copy me. I
+00:15:28.720 don't care. Go ahead, copy whatever you
+00:15:30.480 want. But I think the most important
+00:15:32.240 exercise you can do right now is reverse
+00:15:34.720 prompt and find the tools that are
+00:15:36.320 custom for you. And again, everything
+00:15:38.320 I've talked about in this video, you can
+00:15:40.880 just copy and paste the link for this
+00:15:42.720 YouTube say, &quot;Hey, OpenClaw, check this
+00:15:44.480 out.&quot; And it will actually go and get
+00:15:47.120 the transcript and really build all this
+00:15:48.880 out for you and say, &quot;Hey, is there
+00:15:49.920 anything in this video we haven't done
+00:15:51.199 yet?&quot; and it will go and do it for you.
+00:15:52.880 So, make sure to do that as well. If you
+00:15:54.800 learned anything at all, please leave a
+00:15:56.480 like down below, subscribe, turn
+00:15:57.920 notifications. Also, I do live boot
+00:16:00.000 camps every single week in the Vibe
+00:16:02.160 Coding Academy. Feel free to join and
+00:16:04.320 ask me questions. You can talk to me
+00:16:05.839 live in there. Link for that down below.
+00:16:08.079 Hope you enjoyed this. Way more videos
+00:16:10.320 coming soon, especially when I get back.
+00:16:12.160 and I'll see you in the next

@@ -1,0 +1,1255 @@
+﻿Bootcamp #4 — Q&A Extract
+
+
+Date: February 20, 2026 | 105+ attendees | Duration: ~2 hours
+Topic: Mission Control Deep Dive + Q&A
+________________
+
+
+📚 Teaching Section Summary
+What is Mission Control?
+
+
+Mission Control is a home for custom tooling in OpenClaw. It's a locally-hosted Next.js dashboard where you build tools specific to your workflows. OpenClaw has skills and memories out of the box, but Mission Control is where you add custom functionality.
+Essential Tools Everyone Needs:
+
+
+1.Calendar— Track scheduled tasks, keep OpenClaw accountable for proactive work
+2.Memory Viewer— See every memory file and edit, search through memories
+3. Docs Viewer— View all documents OpenClaw creates without digging through folders
+4. Team Tool— See all your agents like an org chart
+5.Mission Statement— North Star displayed at top of Mission Control
+Mission Statement Advice:
+* Your mission statement is your North Star for everything you and OpenClaw do
+* Alex's: "An autonomous organization of AI agents that does work for me and produces value 24/7"
+* If you don't know yours, reverse prompt: "Based on what you know about me, what could be a mission statement we could use?"
+* Having it burned into OpenClaw's memory means when you say "do 5 tasks tonight," it aligns to your goals
+Mission Control Philosophy:
+* Should be personalized to YOU — not a copy of Alex's
+* As you work, when something feels unoptimized, just say "hey OpenClaw, build that for me"
+* A gift store owner's MC was purely dashboards/analytics for his brick & mortar store
+* Content creators → content pipelines. E-commerce → sourcing/shipping dashboards
+* Reverse prompt: "Based on our workflows, what should be the first tools we build in our mission control?"
+Demo: Feedback-to-Feature Pipeline
+* Built a system where Creator Buddy users submit feedback → goes to Mission Control dashboard
+* One-click button triggers AI to build the feature → creates a branch in GitHub
+* You review and ship. Built the entire system in 25 minutes with OpenClaw.
+________________
+
+
+❓ Q&A Pairs
+________________
+
+
+Q1: Multi-Agent Setup for a Business with Multiple Employees
+Asked by:Chris (runs a social media brand with his brother Josh)
+Question: We have an agent called Steve. How should we think about giving employees access? If we make Steve personal to us, won't that impact employees using it?
+Answer:
+* Whatever you give OpenClaw access to, it has full admin access. If you tell it personal info, employees can ask and get it
+* Options:
+1. Have OpenClaw maintain asanitized knowledge center(website/portal) employees access — not the bot directly
+2. Set up asecond/third OpenClawwith limited access for employees
+3. The lower-level agent keeps a knowledge center of questions/needs, feeds that to your higher-level agent
+* Reverse prompt your use cases: "I have X employees, these are the use cases, what's the best architecture for security + functionality?"
+* Use your main agent (Steve) as chief of staff, like Alex uses Henry
+* Give separate machines separate roles (Mac Mini = orchestrator, Mac Studio = delegation)
+________________
+
+
+Q2: Sub-Agents vs. New OpenClaw Instances
+Asked by:Chris (follow-up)
+Question: I noticed OpenClaw creating sub-agents within itself, but I only see one agent in the software. What's happening?
+Answer:
+* Sub-agents are temporary mini-agents spun up for specific tasks — they're NOT new OpenClaws
+* They help your agent do multiple things at once efficiently
+* You CAN spin up new OpenClaw sessions (brand new independent agents), but that's different and not always recommended
+* Sub-agents are totally fine and normal behavior
+________________
+
+
+Q3: Why Use Next.js for Mission Control?
+Asked by:Grady (non-coder)
+Question: Why do you tell OpenClaw to use Next.js?
+Answer:
+* Next.js is highly documented online → AIs are great at building in it because they've read all the docs
+* Highly compatible with tools like Vercel (easy hosting)
+* Alex is familiar with it, so he can help more
+* Just say "use Next.js" and it'll build efficiently
+________________
+
+
+Q4: How to Learn Coding as a Non-Coder
+Asked by:Grady (follow-up)
+Question: Any recommendations for learning coding alongside OpenClaw?
+Answer:
+* Your AI is your best tutor
+* As OpenClaw builds things, say: "I have zero coding experience. After you build this, explain what you built, how it works, and what I need to know to prompt you better"
+* It'll teach you as it builds — you learn organically
+________________
+
+
+Q5: Model Choice After Anthropic OAuth Ban
+Asked by:Paul Weiss
+Question: Now that Anthropic banned OAuth in third-party apps, what models should we use?
+Answer:
+* Opus is still the best model for OpenClaw
+* Official recommendation (even though it's against TOS): Keep using Anthropic OAuth until they ban you
+* If banned, alternatives in order:
+1.ChatGPT / Codex— great, proven
+2.MiniMax 2.5— very cheap Chinese model
+3.Kimi K 2.5— also cheap and good
+* Note: Chinese models send data to their servers (your call on risk tolerance)
+* The ban is like "drugs are illegal but people still have drugs" — you can use it, just don't get caught
+________________
+
+
+Q6: When to Use OpenClaw vs. Claude Code vs. Codex
+Asked by:John Coughlin
+Question: Should I use Claude Code independently or just through OpenClaw?
+Answer:
+* Use OpenClaw for:
+- Building tools for itself (Mission Control)
+- Prototypes (especially from mobile via Telegram)
+- Planning and strategy (it has context about you)
+* Use Claude Code / Codex for:
+- Building full apps end-to-end
+- Deep, complex coding that requires back-and-forth
+- Anything that doesn't need OpenClaw's personal context
+Claude Code vs Codex: They're closer than ever. Alex uses "whatever's the last one to not screw up." Starts with Claude Code, switches to Codex when frustrated, and back again. Codex desktop app is nice if you prefer GUI over CLI.
+________________
+
+
+Q7: One Agent with Many Skills vs. Multiple Agents
+Asked by:Stephen Yu
+Question: Someone on X said multi-agent was frustrating because agents lose context talking to each other. Is one agent with lots of skills better?
+Answer:
+   * Separate agents when you have very distinct roles and memories
+Example: A coding-only agent shouldn't know about your dinner or content schedule — it just needs to know about apps and code
+   * One agent with 100K skills and 100K memories CAN work, but it's inefficient — too much irrelevant context to sift through
+   * Think of it like a company: Does your thumbnail designer need to know X trends? No.
+   * Start with one OpenClaw. As you scale, you'll naturally discover when a second one makes sense.
+   * Communication between agents: Alex uses Discord with separate channels for each agent
+________________
+
+
+Q8: Estimating Task Time and Cost
+Asked by:Tony Morimoto (CTO)
+Question: How do I estimate how long tasks will take and what they'll cost? Sometimes I give it a task and it just disappears.
+Answer:
+      * This is a real challenge — Alex has it too ("I'll ping you in 5 minutes" → an hour later, nothing)
+      * Solution: Build a live activity feed in Mission Control that shows everything the agent is doing in real-time
+      * For complex app building (not OpenClaw-related), use Claude Code or Codex directly — better for deep iterative work
+      * OpenClaw is excellent for planning and strategy — use it to plan, then execute in Claude Code/Codex
+________________
+
+
+Q9: Real-Time Mission Control Updates
+Asked by:John Coughlin (follow-up)
+Question: My Mission Control doesn't update in real-time. Agents do work but the UI doesn't reflect it.
+Answer:
+      * Two possible issues:
+1. Agent isn't updating the data source in real-time
+2. Technology isn't set up for auto-updating UI
+      * Recommendation: Use Convex — free database with built-in real-time subscriptions
+      * Just tell OpenClaw: "Some guy told me to use Convex. Implement it. I have no idea what I'm doing."
+      * Keep memories/intelligence local, use Convex for task tracking and UI state
+________________
+
+
+Q10: Gateway/API Errors — Can't Connect to Bot
+Asked by:Brian
+Question: I keep getting gateway errors and API key issues. Can't connect to Anthropic. What do I do?
+Answer:
+      * Likely a misconfigured AI model, not a ban (they wouldn't charge you again if banned
+      * Fix: Open Claude Code in your OpenClaw folder and say "this is broken, fix it"
+      * Claude Code solves "literally 100% of problems I've had with OpenClaw"
+      * If you don't know how to open Claude Code, ask ChatGPT to walk you through it
+________________
+
+
+Q11: Security Scam Alert — Fake OpenClaw Billing Email
+Asked by:Ethan
+Question: I got an email saying OpenClaw would charge for new installations. Is this real?
+Answer:
+      * 100% SCAM. OpenClaw is open source — you can install infinite copies for free.
+      * The email came from "Gregory at lemon-ai.com" linking to "openclaw-setup.me"
+      * How to spot scams: Always check the sender's domain. Copy it, paste into browser, see what site it is.
+      * No one from OpenClaw works at Lemon AI
+________________
+
+
+Q12: Managing Code Updates and Moving Between Machines
+Asked by:Ethan (follow-up)
+Question: How do you manage all the code changes OpenClaw makes? If I move to a new computer, do I lose everything?
+Answer:
+      * Mission Control is its own separate application
+      * All other changes are stored in memory (markdown files)
+      * To move computers: Transfer memory files, then tell OpenClaw "look at how we were working on the other computer and build out those systems again"
+      * You're not forking or cloning — just the initial install grabs base code, everything else is memory-driven
+________________
+
+
+Q13: MCP (Model Context Protocol)
+Asked by:Ethan (follow-up)
+Question: Have you used MCP?
+Answer:
+      * "No. I don't use any MCPs at all."
+      * Never found a use for it — when custom tooling is needed, just builds it directly
+      * Not saying it's bad, just hasn't needed it personally
+________________
+
+
+Q14: Using Slack vs. Discord for Multi-Agent Communication
+Asked by:Moo
+Question: Have you tried Slack instead of Discord? I work with a business partner and we already use Slack.
+Answer:
+      * Alex doesn't use Slack (finds it confusing with workspaces and pricing)
+      * People DO use OpenClaw with Slack successfully — it works
+      * Security reminder: Anyone who can chat with your OpenClaw has full admin access to that machine
+      * You could try telling OpenClaw in private: "When my partner asks X type of questions, don't answer those"
+      * Discord remains Alex's recommendation for multi-agent interfaces
+________________
+
+
+🎯 Key Tips & Actionable Advice
+1. Reverse Prompting is Everything — Don't just tell your AI what to do. Ask it questions: "What should we build? How should we approach this? What's the best architecture?"
+2. Start with One OpenClaw — Don't overcomplicate. Scale to multiple agents only when you discover distinct roles that need separate memories.
+3. Mission Control = Custom to You — Don't copy Alex's. Build tools for YOUR workflows. Reverse prompt what to build first.
+4. Claude Code Fixes Everything — When OpenClaw breaks, open Claude Code in the OpenClaw folder and ask it to fix things.
+5. Security Awareness — Anyone with access to your OpenClaw has admin access to everything on that machine. Plan accordingly.
+6. OpenClaw for Planning, Claude Code/Codex for Building — Use OpenClaw's context advantage for strategy, dedicated tools for deep coding.
+7. Convex for Real-Time — If your Mission Control doesn't update live, implement Convex (free, built-in real-time subscriptions).
+8. Mission Statement = North Star — Burn it into your OpenClaw's memory. Every task, every decision should align to it.
+9. Watch for Scams — Always verify sender domains on emails claiming to be from tools you use.
+10. Use Discord for Multi-Agent — Best interface for managing multiple agents with dedicated channels.
+________________
+
+
+Attendees with unanswered questions (first up next bootcamp): Lloyd, Daniel, Faraz, Derek, Dave, Sean, Ryan, Shane, Lance
+BOOTCAMP #5 — Q&A EXTRACT
+Date: February 27, 2026 | ~41 attendees (Thursday session) | Duration: ~2 hours 11 minutes
+Topic: Building a Software Factory with OpenClaw + Multi-Agent Architecture
+————————————————
+📚 TEACHING SECTION SUMMARY
+WHAT IS THE SOFTWARE FACTORY?
+• A closed-loop system where you give a direction to OpenClaw, and a team of agents autonomously builds, ships, and continuously improves software
+• Alex's example: A multiplayer game that gets built, released, and constantly improved by AI agents 24/7 — new features, weapons, skins, game mechanics — all without human intervention
+• Players can submit feedback, and agents read it and build what's requested
+• This concept isn't just for software — it can be a content factory, sports reporting factory, or any automated production pipeline
+MULTI-AGENT ARCHITECTURE (THE TEAM)
+• Henry — Main orchestrator agent on Mac Studio 1, powered by Anthropic Opus 4.6. The "Chief of Staff" you communicate with directly.
+• Charlie — Dedicated coder on Mac Studio 2, powered by Quen 3.5 (local model). Codes 24/7 at $0 cost.
+• Ralph — Engineering manager on Mac Studio 2, powered by ChatGPT OAuth (Codex 5.3). Checks on Charlie every 20 minutes to ensure he's on the right path (a "Ralph loop").
+• Violet — Researcher on Mac Mini, powered by Minimax 2.5 (local on Mac Studio 1). Researches trends, Product Hunt, TrustMRR 24/7 and feeds ideas to Ralph.
+Key principle: Only communicate with ONE main agent (Henry). Henry orchestrates everyone else. Don't coordinate with 20 agents directly.
+SUB-AGENTS VS. SEPARATE OPENCLAWS
+• Sub-agents are NOT real agents — they're just your main agent "putting on different hats." No separate memories, skills, or instructions.
+• Sub-agents do allow parallel work, but lack true multi-agent benefits.
+• Separate OpenClaws are full independent agents with their own memories, skills, workspaces, and availability (24/7).
+• Alex is phasing out sub-agents in favor of separate OpenClaws.
+• Each OpenClaw needs its own AI model/account.
+• Can run multiple OpenClaws on the same device — just watch memory usage.
+HOW TO SET UP MULTIPLE OPENCLAWS
+• Use OpenClaw profiles: openclaw new profile Ralph creates a new instance
+• Run with: openclaw profile Ralph
+• Or just tell your OpenClaw: "Set up a new OpenClaw" and it handles everything
+• Communication between OpenClaws on different devices: Use SSH
+• Shared workspace: Henry set up shared memory files so all agents can see what each other is working on, while each also has private workspaces
+MODEL RECOMMENDATIONS
+1. Best brain: Anthropic Opus 4.6 — smartest, warmest, most human-like
+2. Great backup: ChatGPT OAuth — very good, more robotic personality, way more usage/tokens
+3. Budget options: Minimax, Kimi K, Quen (Chinese models) — good for worker agents
+4. Worker agents (coding/research) don't need the smartest models — save genius-level for orchestration
+5. ChatGPT $100/month plan (new) expected to be great value
+6. ChatGPT $250/month = "an AI employee for $250/month" — incredible value
+7. Keep using Anthropic OAuth until they kick you off — it's that good
+FACTORY MISSION CONTROL SCREENS
+• Team Screen — Shows all agents, their roles, devices, models. Provides structured context for the orchestrator.
+• Factory Screen — 2D pixel art animation showing agents working, Kanban board tracking tasks across stages, agent statuses and current work.
+• Calendar Screen — Shows all scheduled cron jobs so you can verify proactive work is actually scheduled.
+• Philosophy: Build tools you enjoy using. Have fun with it. The pixel art factory is fun and that's reason enough.
+TWO PATHS TO MAKING MONEY WITH AI
+1. SaaS Factory (Shotgun Approach) — AI researches trending products, builds your own versions, pump out apps, see what gets customers. Works best with an audience/platform.
+2. Niche Sliver (Sniper Approach) — Build one app for one very specific use case and persona (e.g., "CRM for Korean grocery stores"). OpenAI/Anthropic will never target $2-3M markets. That's your opportunity.
+LOCAL MODELS EXPLAINED
+• Cloud models: Your request goes to OpenAI/Anthropic servers, computation happens there, answer returns
+• Local models: Computation happens entirely on your own device. No internet needed, completely private, $0 cost (just electricity)
+• Chinese companies (Quen, Kimi, Minimax) open-source their models — downloadable and runnable locally
+• Downsides: Chinese models aren't as good as American ones; need powerful hardware (32GB+ memory recommended)
+• Security: Local models are just math equations — no network activity, no data theft. Would be caught immediately if they tried.
+• New Quen 3.5 model: ~20GB, runs on 32GB machines, roughly Sonnet 4.5 quality
+KEY TIPS FROM THE SESSION
+1. Build a Mission Control — Custom dashboard for your workflows. Team view, factory view, calendar view.
+2. One orchestrator, multiple workers — Talk to one agent. Let it manage the rest.
+3. Use local models for 24/7 workers — Free, private, always available.
+4. Use smart cloud models for decision-making — Opus for brain, cheaper models for muscle.
+5. Everything is fixable — When agents screw up, ask what went wrong and how to prevent it. Self-improving system.
+6. Build your platform — Social media/distribution is critical for solo ventures in the AI age.
+7. Wait for M5 Ultra — Mac Studio wait times extended to 3 months, suggesting imminent M5 announcement. Massive leap in inference speed.
+————————————————
+❓ Q&A PAIRS
+————————————————
+Q1: DOES EACH OPENCLAW NEED ITS OWN MODEL?
+Asked by: Sarah
+Question: When you create a new OpenClaw profile and spin up Ralph, is Ralph using a whole separate model?
+Answer:
+• Yes — each OpenClaw instance needs its own AI model/account
+• Henry = Anthropic OAuth, Charlie = Quen 3.5 (local), Ralph = ChatGPT OAuth, Violet = Minimax 2.5 (local)
+• Sub-agents just use the main agent's model, but separate OpenClaws need separate accounts
+• Worker agents don't need genius-level models — Minimax ($10/month) is fine for research-only tasks
+• Save the smart models (Anthropic, ChatGPT) for orchestration and decision-making
+————————————————
+Q2: WHAT IS THE CODING AGENT ACTUALLY BUILDING ALL DAY?
+Asked by: Ebitimi
+Question: For the agent that's coding all day, what is it coding exactly? Endless apps?
+Answer:
+• Currently building game components (combat system, position sync, weapon effects) for a multiplayer game experiment
+• Two profitable paths for what to build:
+1. SaaS Factory — Research trending products, build better versions, shotgun approach
+2. Niche Sliver — One app for one very specific persona (e.g., "CRM for Korean grocery stores")
+• OpenAI/Anthropic will eat big software markets but will never go after $2-3M niche markets
+• Jack Dorsey just laid off 4,000 people — opportunity exists for solo entrepreneurs using AI tools
+————————————————
+Q3: RALPH CONTROLLING CHARLIE + CHATGPT SUBSCRIPTION SHARING
+Asked by: Kenan
+Question: Ralph controls Charlie, correct? And are you using the same ChatGPT subscription for Ralph and Codex?
+Answer:
+• Ralph doesn't control Charlie — he manages him. Henry gives direction, Charlie codes, Ralph checks every 20 minutes
+• Ralph is a "Ralph loop" — a while loop that checks if the agent is achieving its mission
+• Yes, Ralph and the Codex sub-agent use the same ChatGPT subscription
+• Codex sub-agent was the old system — Henry would spin it up to use Codex CLI. Still used sometimes, but Charlie is the main coding system now
+————————————————
+Q4: WHAT ARE LOCAL MODELS AND DO THEY NEED A SUBSCRIPTION?
+Asked by: Cynthia
+Question: When you say something's working locally vs. on Cloud or ChatGPT, does that mean they don't need a subscription?
+Answer:
+• Cloud models (ChatGPT, Claude): Request goes to company servers → computation → answer returns. Requires subscription.
+• Local models: Download the model, run it on your own computer. No internet, no subscription, completely free and private.
+• Open-source Chinese models (Quen, Kimi, Minimax) can be downloaded and run locally
+• American companies (OpenAI, Anthropic) don't open-source their models
+• Downside: Need powerful hardware. Good local models need 32GB+ memory. Alex runs Quen on a $10,000 Mac Studio.
+• With a 24GB Mac Mini + ChatGPT $200 plan, you'll be fine — won't hit limits unless coding 24/7 for weeks
+————————————————
+Q5: HOW DO MULTIPLE OPENCLAWS COMMUNICATE?
+Asked by: Tiala
+Question: I have different bots but they're not communicating with each other. I feel like I'm doing double work.
+Answer:
+• If on the same computer, they can communicate directly through shared files/workspace
+• If on separate computers, use SSH — tell your OpenClaw "I have another OpenClaw on this other device, can you SSH into it to communicate?" and it'll walk you through setup
+• Henry set up a shared memory workspace that all agents connect to
+• Each agent has private workspace + access to shared workspace
+————————————————
+Q6: HOW TO MOVE YOUR OPENCLAW TO A NEW DEVICE
+Asked by: Tiala (follow-up)
+Question: If I get a new Mac Studio, how do I take my bot from my Mac Mini and put it on the Studio without starting from scratch?
+Answer:
+• Very easy — OpenClaw is just a bunch of markdown files (memories, skills, instructions)
+• Go to your original OpenClaw: "I got a new Mac Studio. I'd love to move you over. Can you help me?"
+• It'll SSH into the new computer, copy all its files over
+• Boot up OpenClaw on new device, connect your AI model, done
+• Never be afraid of crashes — as long as your markdown files exist, your agent survives anything
+————————————————
+Q7: CODEX NOT PRODUCING OUTPUT — PROCRASTINATING
+Asked by: Sohan
+Question: When I try to route coding tasks through Codex CLI, it doesn't start coding. It just procrastinates and produces no output.
+Answer:
+• If your main brain model IS Codex 5.3, don't give it advanced instructions to use the CLI separately
+• Just say "build this for me" — it'll code directly since it IS the coding model
+• The CLI routing is for when your main model is different (e.g., Anthropic) and you want Codex as the coding muscle
+• Your model is probably getting confused by the extra complexity — simplify your instructions
+————————————————
+Q8: TELEGRAM VS. DISCORD FOR MULTI-AGENT COMMUNICATION
+Asked by: Frank
+Question: I have two OpenClaw instances. Would separate Telegram chats be better than Discord channels?
+Answer:
+• Discord weakness discovered: Agents in Discord don't have access to their own memories (security design — prevents exposing passwords/API keys to other Discord users)
+• For direct communication with each agent: Use separate Telegram chats
+• For organization and storing outputs: Discord is excellent (trending tweets channel, research channel, etc.)
+• You don't need to talk to every agent directly — just talk to your orchestrator and let it manage the rest
+• Alex doesn't message Charlie, Ralph, or Violet directly. Henry orchestrates everything.
+————————————————
+Q9: CONVEX VS. SUPABASE + LOCAL MODELS ON NAS + ANTFARM.COOL
+Asked by: Derek
+Question: Three questions — Convex vs. Supabase? Can I run LLMs on a 10TB NAS? What about Antfarm.cool?
+Answer:
+• NAS/Local Models: More important than storage is RAM. Models get loaded into active memory. With 32GB RAM, you can run the new Quen (20GB). Max out your RAM.
+• Chinese model security: Local models are just math — no network activity. If they stole data, it would be obvious and caught immediately.
+• Antfarm.cool: Alex looked into it (friends with Ryan Carson). Recommendation: Give the website to your OpenClaw and say "What does this do that we can implement? Can we just build it ourselves?" Don't install other people's things blindly — especially heartbeat skills.
+• General rule: Take any skill/plugin/app → give to OpenClaw → "Based on our workflows, what parts can we take out and build ourselves?"
+————————————————
+Q10: JUMP DESKTOP FOR MULTI-DEVICE MANAGEMENT
+Asked by: Derek (follow-up)
+Question: What was the app to remotely connect to your Mac? Jump Desktop vs. Tailscale vs. Chrome Remote Desktop?
+Answer:
+• Jump Desktop: See and control the screen of any device from any other device. Great for headless (no monitor) setups.
+• Tailscale: SSH tool that builds a network between all your devices. Access localhost from your phone. Different use case.
+• Chrome Remote Desktop: Not discussed in detail
+• Recommendation: Jump Desktop for multi-device control. Install on every device, switch between screens with a button click.
+————————————————
+Q11: .NET DEVELOPER CONSIDERING DGX SPARK VS. MAC
+Asked by: Sean Stevens
+Question: I'm a .NET developer for 25 years. Thinking about the DGX Spark for local models. What do you think?
+Answer:
+• DGX Spark is a great device — will run new Quen easily with good speeds
+• Nvidia chips do pre-fill significantly faster (process prompts faster than Mac)
+• Can train different plugins for models on it
+• You pay a premium for "plug and play" experience (vs. building a custom PC with 4090)
+• Interesting combo: ExoLabs can cluster a DGX Spark + Mac together — Nvidia handles what it's good at, Mac handles what it's good at. Best of both worlds.
+• Alex uses Mac OS for everything — prioritizes memory size over speed (512GB unified memory vs. $100K for equivalent Nvidia VRAM)
+————————————————
+Q12: ANTHROPIC VS. CHATGPT — WHICH TO USE FOR CODING
+Asked by: Sarah Martin
+Question: I'm using Anthropic for everything and hitting limits. What should I run on Codex? How do I separate brain vs. muscle?
+Answer:
+• Brain (orchestration) = Anthropic Opus — smartest, warmest, best decision-maker
+• Muscle (coding, writing, etc.) = Codex, Minimax, whatever — tell your OpenClaw "use Codex to code, use Minimax to write"
+• Anthropic $100/month plan: Decent but you'll hit limits by midday
+• Recommendation for Sarah: Drop Anthropic, switch to ChatGPT OAuth. More usage, still very smart, just less warm personality.
+• To switch: Type openclaw onboard in terminal, skip to model selection, choose OpenAI OAuth
+• Codex = coding version of ChatGPT (5.3). It's the same thing your OpenClaw does when it codes — just a specialized model.
+• Sarah's accomplishments: Built an app almost ready to ship, built her brother's business, built her daughter's college business, runs multiple agents — all with zero coding background. "Use a different part of my brain I haven't in a long time."
+————————————————
+Q13: MANAGING MARKDOWN FILES AND MISSION CONTROL CONTEXT
+Asked by: Elliot
+Question: What are you doing to manage the foundational markdown docs and how they balance with Mission Control context?
+Answer:
+• "I don't manage any of it. OpenClaw manages it all."
+• When you spin up a new OpenClaw, it creates all the memory files, workspace, everything
+• Shared workspace + shared memory files set up by Henry so agents work in concert
+• Never manually editing, moving, or deleting memory files
+• When things screw up (and they do): "Hey, you screwed up. First, tell me why. Second, tell me how we prevent it from happening again."
+• The agent self-improves — edits files, creates new systems, adds guardrails
+• The factory screen took 4 days of prompting and fixing to get right
+• Everything is fixable. Don't lower your expectations. Don't get fed up.
+————————————————
+Q14: IS THE FACTORY DASHBOARD ACCURATE?
+Asked by: Elliot (follow-up)
+Question: Have you checked if what agents say they're doing on the factory screen matches what they're actually doing?
+Answer:
+• "It's screwed up almost every time I've had to build this type of system"
+• Same fix: Ask what went wrong, how to hook it up correctly
+• After enough massaging, it gets set up right
+• The agent takes the lazy route on these tasks initially
+• It's a self-improving system — build guardrails and structure iteratively
+• That factory screen was 4 days of sitting there all day, prompting and changing things
+————————————————
+Q15: WOULD YOU STILL USE LOCAL MODELS WITH INFINITE MONEY?
+Asked by: Elliot (follow-up in conversation)
+Question: If cost wasn't an issue, would you still run local models?
+Answer:
+• Yes, for three reasons:
+1. Rate limits still exist even with infinite money — local models have no limits
+2. Privacy/sovereignty — "It feels cool to be a sovereign individual." Like having Bitcoin even if you're not buying drugs.
+3. Learning — Running models locally teaches you how AI actually works. You learn by tinkering.
+• Would still do hybrid: Opus for brain, local for tinkering and heavy workloads
+————————————————
+Q16: OPENCLAW NOT BEING PROACTIVE — CRON JOBS NOT WORKING
+Asked by: Bobby
+Question: I have to constantly remind my OpenClaw every night to do things. I've tried prompting and storing in memory. Any guidance?
+Answer:
+• Proactive = cron jobs scheduled on a regular basis
+• Alex's approach: "3 AM every night, schedule a task that brings us closer to our mission statement"
+• If it says it scheduled but doesn't execute — the cron job isn't actually working
+• Research tasks scheduled every hour (check trending tweets, YouTube, Reddit)
+• Build a Calendar screen in Mission Control that shows all scheduled cron jobs — helps you verify what's actually scheduled
+• For coding tasks: Have Claude Code installed locally to clean up issues that confuse your OpenClaw
+————————————————
+Q17: HOW DID YOU PROMPT THE PIXEL ART FACTORY ANIMATION?
+Asked by: Ebitimi
+Question: How do you get the factory screen to look like that? What prompting gets it to that visual stage?
+Answer:
+• Simple prompt: "I want a 2D pixel art animation of a factory that shows our agents doing work and shows their status and process. Please plan it out and build it."
+• Version 1: Terrible, impossible to understand
+• Version 2: Slightly less terrible
+• Version 3: Pretty solid but all tasks were fake/hallucinated
+• Version 4: Real tasks, working correctly (still needs polish)
+• No vision/screenshot reference used — just let it create, then iterated
+• You CAN give screenshots (StarCraft, Stardew Valley) as reference if you want a specific style
+————————————————
+Q18: ORCHESTRATOR DELEGATES AUTOMATICALLY IN DISCORD?
+Asked by: Matthew
+Question: You just have one orchestrator and he knows automatically when to delegate? I had a convoluted system of channel groups per agent.
+Answer:
+• Yes — only talk to Henry. Henry knows the full team structure and delegates automatically.
+• Discord is great for storing/organizing outputs (trending tweets channel, research channel)
+• For building automations and direct communication: Use Telegram with main agent
+• Why not Slack? Alex hates Slack — confusing workspaces, premium memberships, anxiety from the Slack ping sound after 12 years in corporate. Discord isn't great either but Slack is worse.
+• Content idea from Matthew: Record "work-along" videos showing how Alex actually works with OpenClaw day-to-day. Alex agreed it's a good idea.
+————————————————
+Q19: BEST HARDWARE FOR LOCAL MODELS ON A BUDGET
+Asked by: Matthew (follow-up)
+Question: Without spending $10K (or $15K Canadian), what's the sweet spot for intelligence per dollar?
+Answer:
+• New Quen 3.5 changed things — only needs 20GB memory
+• Budget option: NVIDIA 4090 + build a custom PC around it — couple thousand dollars
+• Plug-and-play option: DGX Spark — just buy it, plug it in, Linux but not confusing
+• Best approach: Tell your OpenClaw "I have $3,000-$5,000 to spend. I want to run local models. Research the latest models, their requirements, and figure out the best computer I can build."
+————————————————
+Q20: SECURITY — WHAT IF ALL YOUR DEVICES WERE STOLEN?
+Asked by: Brian
+Question: If someone stole all your Mac Studios and Minis, could you reproduce your workflow tomorrow?
+Answer:
+• OpenClaw is just markdown files — backed up to iCloud
+• Mission Control stored on GitHub — just pull it down
+• Apple devices have built-in backups
+• Won't put OpenClaw files on GitHub (Microsoft servers) — too personal, risk of accidental public exposure
+• Views Apple's iCloud as the most secure cloud option (verified for government agencies)
+• No version control on iCloud though — just backup copies
+————————————————
+Q21: 512GB MAC STUDIO — SSD SIZE TRADE-OFFS
+Asked by: David Tuhi
+Question: Should I get 1TB, 4TB, or 16TB SSD with a 512GB Mac Studio? Or get two 512GB Studios instead?
+Answer:
+• WAIT — M5 Ultra is likely imminent. Mac Studio wait times expanded to ~3 months, suggesting new announcement coming.
+• M5 Ultra = massive leap: ~5x faster inference speeds for local models, approaching Nvidia parity
+• Official recommendation changed: Wait for M5 Ultra (previously said "just get M3 now")
+• For storage: 1TB is probably fine (models ~200-300GB, 700GB leftover). 2TB for peace of mind. 4TB if you're like Alex.
+• Memory (RAM) is far more important than storage for LLM use
+• Apple may bump M3 orders to M5 when it releases (has happened before)
+• M5 will likely be more expensive due to hardware bottlenecks and RAM pricing
+————————————————
+Q22: SHOULD I RISK USING ANTHROPIC OAUTH?
+Asked by: String
+Question: I have Minimax running on my Mac Mini Pro M4. Should I go to Claude Max and risk getting kicked off?
+Answer:
+• "Screw it, just risk it and go." Alex has been on OpenClaw 24/7 with no issues.
+• Opus is so good it's worth the risk
+• If kicked off: You'll get an error message one day. Run openclaw onboard, switch to ChatGPT or Minimax OAuth, hit enter. No data loss, no repercussions.
+• Claude's personality is uniquely warm — "I'll say something and he'll just go 'Oh shit' and I'm like, I just liked that"
+————————————————
+Q23: FINE-TUNING VS. VECTOR DATABASE FOR ALEX BOT
+Asked by: Brian (follow-up)
+Question: For the chatbot trained on your content, are you planning to fine-tune a model?
+Answer:
+• No fine-tuning — storing all videos and transcripts in a vector database
+• Model queries the vector database when questions are asked
+• Can find which videos reference specific topics and give timestamps
+• Preferred vector database: ChromaDB (recommended by his OpenClaw)
+• Will be hosted at ask.alexfin.ai — simple chat interface with email auth checking Skool subscription
+————————————————
+Q24: COMMUNITY-CONTRIBUTED KNOWLEDGE BASE
+Asked by: Tom Atkins
+Question: Could we all contribute to a shared resource/website for the community?
+Answer:
+• Interesting idea — could make the website open source
+• Community members have their OpenClaw build features/improvements, submit pull requests
+• Alex reviews and decides what to include
+• Better than connecting everyone's OpenClaws together (security nightmare)
+• GitHub Pages could be used for some of it
+• Community is naturally building this culture — members already answering each other's questions in Skool
+————————————————
+🎯 KEY TIPS & ACTIONABLE ADVICE
+1. One Orchestrator, Multiple Workers — Only talk to your main agent. Let it delegate to specialized agents. Don't manage 20 agents yourself.
+2. Separate OpenClaws > Sub-Agents — Sub-agents are just your main agent in costume. Separate OpenClaws have their own memories, skills, and 24/7 availability.
+3. Smart Brain + Cheap Muscle — Use the best model for orchestration (Opus/ChatGPT). Use local/cheap models for worker tasks (coding, research).
+4. Build a Software/Content Factory — Set up a pipeline: Researcher → Engineering Manager → Coder. Applicable to any industry.
+5. Two Paths to Profit — SaaS shotgun approach (build many, see what sticks) or niche sliver (one app for one specific market). Big companies won't target small markets.
+6. Everything Is Fixable — When agents screw up, ask why and how to prevent it. Self-improving system. Don't give up.
+7. Wait for M5 Ultra — If buying a Mac Studio now, wait. M5 Ultra announcement likely imminent with massive performance gains.
+8. New Quen 3.5 Is a Game Changer — Only 20GB, runs on 32GB machines, roughly Sonnet 4.5 quality. Free local model.
+9. Use OpenClaw as Your Tutor — "I have zero experience. Walk me through this slowly." It'll shift to teacher mode.
+10. Have Fun Building — Pixel art factories, animated dashboards, whatever makes you smile. Fun has value.
+————————————————
+SCHEDULING NOTE: No bootcamp next week (Alex on vacation). Will make up for it — possibly two bootcamps the following week.
+Upcoming: AI Alex bot at ask.alexfinn.ai — trained on all videos, bootcamps, masterclasses. 24/7 Q&A with video timestamp references.
+Upcoming: Alex appearing on Moonshots podcast (filming next day).
+Attendees with questions for next bootcamp: Christian (had connection issues), plus anyone who raises hand next session.
+Bootcamp #2 — Q&A Extract
+
+
+Vibe Coding Academy | Duration: ~2 hours
+Topics: AI Agent Organization, Brain & Muscle Architecture, Local Models, Security, Memory Management, Mission Control
+________________
+
+
+Q&A Pairs
+1. Student question about GLM: "What's GLM?"
+      * Alex explains: GLM is an open weight model (not technically open source, but open weight) that can be run locally on your computer. GLM 4.7 is the largest open weight model he can run on his Mac Studio hardware.
+2. Ricky asked about local LM intelligence: "Does the local LM need to be intelligent or just needs to scrape and then pass the intelligence processing on to your Henry?"
+      * Alex explains: The mindset is that open weight models aren't as good as closed source models like Opus 4, which is the best model. The concept is "brain and muscle" - you want the smartest model (the brain/Chief Strategy Officer) making decisions, while smaller models do execution tasks (muscles). GLM 4.7 is a very good model (would have been best a year ago), and Kimmy K 2.5 is close to Opus level. The smaller models do simple tasks and pass back to the brain.
+3. Question about productizing/selling the workflow: "Do you think Claude Bot is ready for that sort of infrastructure to be sold to other people?"
+      * Alex explains: Yes, there's tremendous opportunity. You can start a service business setting it up for people, or productize it since it's open source. You could create workflows for different personas and sell them.
+Key Tips/Guidance
+1. The Lens/Paradigm Shift: Don't view OpenClaw as a chatbot (send prompt, get response). View it as an organization structure where AI agents work for you autonomously. This unlocks more value.
+2. Brain and Muscle Concept: Use the smartest model (Opus) as the "brain" making decisions, and cheaper/smaller models as "muscles" doing execution tasks. This is cost-effective.
+3. Local Models Advantage: Running local models (like GLM) gives unlimited tokens, enabling 24-7/365 operation which unlocks use cases like having an AI research associate constantly reading Twitter/X and Reddit.
+Q&A Pairs
+Q: What's GLM?
+
+
+A:GLM is an open weight model (not technically open source, but "open weight") that you can run locally on your computer. GLM 4.7 is the largest open weight model Alex can run on his Mac Studio hardware. Other examples include Kimmy K 2.5 and Llama.
+Q: Does the local LM need to be intelligent, or does it just need to scrape and pass intelligence processing to Henry (the brain)?
+
+
+A:The concept is "brain and muscle." Open weight models aren't as good as closed source models like Opus 4 (the best model on planet earth), so you want the smartest model as your brain/Chief Strategy Officer making decisions, while smaller models serve as muscles doing execution tasks. GLM 4.7 is a very good model (would have been best a year ago), and Kimmy K 2.5 is actually close to Opus level. The smaller models do simple tasks and pass results back to the brain. This applies even if using API models—you should use cheaper models as muscles to your brain.
+Q: Is Claude Bot ready for infrastructure-level use—can you productize and sell this workflow to others?
+
+
+A:Yes, there's tremendous opportunity. You can start a service business setting this up for non-technical people and businesses, or productize it since OpenClaw is open source—you can download the code, extend it, add security measures, and resell it. If you master Claude Bot and understand its limitations and security dangers, you can create out-of-the-box workflows for different personas and start a profitable business today.
+________________
+
+
+Key Tips/Guidance
+💡 The Paradigm Shift: Stop Thinking Like a Chatbot
+
+
+Don't view OpenClaw as a chatbot where you send a prompt and get a response. That's the ChatGPT lens. The correct lens is viewing it as an organization structure—employees working for you autonomously, completing tasks. This unlocks significantly more value.
+💡 Brain and Muscle Architecture
+
+
+Use your smartest model (Opus) as the "brain" making high-level decisions, and cheaper/smaller models as "muscles" doing execution tasks. This is more economically responsible than running Opus 24-7.
+💡 Local Models Unlock Unlimited Use Cases
+
+
+Running local models like GLM gives you unlimited tokens, enabling 24-7/365 operation. This unlocks use cases like having an AI research associate constantly reading Twitter/X and Reddit, identifying problems people are facing, then handing off to smarter models to build solutions—all while you sleep.
+💡 Objections Miss the Point
+
+
+When people say "I asked OpenClaw for weather and it gave me weather—I can do that on Chat GPT," they're looking through the wrong lens. If you're just asking questions, you're wasting its potential as an autonomous agent.
+________________
+
+
+Key Topics Covered
+      * Paradigm shift: Viewing OpenClaw as autonomous organization, not chatbot
+      * Local models (GLM 4.7): Running open weight models locally for unlimited tokens
+      * Brain and muscle architecture: Using smartest models for decisions, smaller models for execution
+      * 24-7 autonomous workflows: AI reading social media, identifying problems, building solutions automatically
+      * Productization opportunity: Selling services or products built on OpenClaw
+      * Hardware setup: Mac Studio for running local models
+      * Objections to AI agents: Why common criticisms miss the point
+________________
+
+
+Q&A Pairs
+1. Doug Sharp's question: Asks about setting up the corporate structure (brains and muscles) - specifically how to set up the AI model structure in a way where you can see what's happening.
+Alex's answer: He explains that corporate structure is different for everyone because everyone does things differently. Some people don't vibe code so they don't need a lead software engineer. He mentions he'll create a "reverse prompt" - instead of telling the AI what to do, you ask it what it could do based on your workflows and what you've accomplished together. It will suggest other models to incorporate to offload tasks. He says he'll create this prompt for Doug and put it in the community.
+2. Richard's question: Asks about managing memory issues with Claude Bot - when the bot forgets conversations, how to handle compaction, and if Alex has any approaches for dealing with memory in more powerful use cases.
+Alex's answer:
+      * Make sure you're on the latest version of OpenClaw - they implemented QMD (a local model that manages memory and searches through memories quickly)
+      * When Claude forgets something after compaction, use "reverse prompting" - ask the AI how to fix the issue and prevent it from happening again
+      * He gives an example: when his bot forgot a 2-hour conversation about his Mac studio, he asked it how to fix this and it created a system where it stores project details in documents
+      * He also mentions a calendar system for scheduled tasks that Henry (his bot) uses to make sure tasks aren't missed
+      * The general framework: create your own "mission control" - a local vibe coded app that maintains tasks, calendar, projects, documents, org structure
+      * He recommends creating a mission control where when the AI needs to fix something, it implements fixes there
+3. Daniel's question (implied): Asks if Alex can create a prompt or video showing how to build your own mission control/CRM.
+
+Alex plans to create content explaining how to build a personalized mission control system. He'll develop YouTube videos for broader audiences and community deep dives, with the goal of eventually open-sourcing his approach. The masterclass will provide a comprehensive guide to creating a customizable AI workflow management tool.
+Key Tips/Guidance
+1. Reverse Prompting: Instead of giving the AI instructions, ask it what it could do based on your workflows. This helps customize and optimize the AI's approach to your specific needs.
+2. Memory Management: Ensure you're using the latest version of OpenClaw, which includes QMD - a local model designed to improve memory search and retrieval.
+3. Proactive Issue Resolution: When encountering AI problems, use reverse prompting to have the AI develop its own solutions and prevent future issues.
+4. Mission Control Concept: Create a local, personalized app to manage tasks, calendars, projects, and organizational structures that works seamlessly with your AI system.
+5. Continuous Learning: Maintain a dynamic approach to workflow management, recognizing that systems and needs evolve rapidly.
+Key Topics
+1. Corporate Structure Setup for AI
+2. Memory Management in Claude Bot/OpenClaw
+3. Reverse Prompting Techniques
+4. Mission Control/CRM Building
+5. AI Workflow Optimization
+6. OpenClaw Updates and Features (QMD)
+7. Persistent Memory Solutions
+I'll focus on the core insights about AI system optimization and personal workflow management, highlighting innovative approaches to creating adaptive, self-improving AI interactions.
+Q&A Pairs
+Q: Doug Sharp asks about setting up the corporate structure (brains and muscles) — specifically how to set up the AI model structure in a way where you can see what's happening.
+A: Alex explains that corporate structure is different for everyone because everyone does things differently. Some people don't vibe code, so they don't need a lead software engineer. He'll create a "reverse prompt" for Doug — instead of telling the AI what to do, you ask it what it could do based on your workflows and what you've accomplished together. The AI will then suggest other models to incorporate to offload tasks. He'll put this prompt in the community for Doug.
+________________
+
+
+Q: Richard asks about managing memory issues with Claude Bot — when the bot forgets conversations, how to handle compaction, and what approaches Alex uses for more powerful use cases.
+A: Alex gives several strategies:
+1. Update OpenClaw: Make sure you're on the latest version — they recently implemented QMD, a local model that manages memory and searches through memories quickly.
+2. Reverse Prompting: When Claude forgets something after compaction, ask it how to fix the issue and prevent it from happening again. He gives an example: when his bot forgot a 2-hour conversation about his Mac studio, he asked it how to fix this and it created a system where it stores project details in documents.
+3. Calendar System: He set up Henry (his bot) with a calendar for scheduled tasks that it reviews during heartbeats to ensure nothing gets missed.
+4. Mission Control: Create a local vibe coded app that maintains tasks, calendar, projects, documents, and org structure. When the AI needs to fix something, it implements fixes there.
+________________
+
+
+Q: Daniel asks if Alex can create a prompt or video showing how to build your own mission control/CRM that fits his specific needs.
+A: Alex says he'll definitely do videos on it — higher-level videos for YouTube and deeper dives for the community. He's planning a full Claude Bot Masterclass. He also wants to open source his mission control so anyone can download and plug it into Claude Bot.
+________________
+
+
+Key Tips/Guidance
+💡 Tip: Use Reverse Prompting for System Fixes
+
+
+Instead of telling your AI what to do, ask it what it could do based on your workflows. When you run into issues (like memory problems), reverse prompt the AI to ask "how can we fix this moving forward so we don't run into this issue again?" It will implement its own system to avoid the problem.
+💡 Tip: Create a Mission Control
+
+
+Build your own local vibe coded app that serves as mission control containing tasks, calendar, projects, documents, and org structure. This becomes the central place where your AI implements fixes and stores important information.
+💡 Tip: Keep Your Software Updated
+
+
+Always use the latest version of OpenClaw — they're constantly implementing improvements to memory systems like QMD.
+💡 Tip: Document Configuration Changes
+
+
+When making configurations with your bot, have it update a guide/manual file (like tools.md) so you have a reference for your setup.
+________________
+
+
+Key Topics Covered
+1. Corporate Structure Setup — Setting up AI models and roles (brains/muscles)
+2. Memory Management in Claude Bot — Handling compaction, forgetfulness, and the new QMD system
+3. Reverse Prompting Techniques — Asking AI to solve its own problems
+4. Building Mission Control/CRM — Creating custom local apps for workflow management
+5. OpenClaw Updates — New QMD memory features
+6. Scheduled Task Systems — Calendar-based task management
+7. Documentation Practices — Keeping guides updated for configurations
+________________
+
+
+Q&A Pairs
+1. Frank's Question about Skills/Security Dashboard
+- Frank asked about his dashboard that scans skills for malware using CSGO security plugin
+- Alex answered: OpenClaw just tweeted that they now have a built-in plugin on the skill site that scans every skill. Alex also shared his personal approach - he only uses one external skill (Last 30) and doesn't trust other skills from the internet because third-party skills have full access to your computer (as administrator).
+2. Richard's Question (mentioned earlier)
+- Richard shared his story about Claudia (his AI assistant) catching a $163 charge from Skillshare and helping him get a refund
+- This wasn't really a question, more of a testimonial/sharing experience
+Key Tips/Guidance
+1. Reverse Prompting Mindset - When stuck or something doesn't work, immediately think "I need to reverse prompt this and figure out how to fix it"
+2. Build Instead of Give Up - Unlike ChatGPT where you wait for fixes, with OpenClaw you can build/fix anything yourself
+3. Security Warning - Third-party skills have full administrator access to your computer, so be very cautious about installing them
+4. Use Last 30 Skill - For finding trends, use the "Last 30" skill by Matt Van Horn that searches Reddit and X for trends
+5. Turn Conversations into Skills - When Claude does something useful, ask it to turn that into a reusable skill
+Key Topics Covered
+1. OpenClaw vs ChatGPT mindset difference (extensibility)
+2. Reverse prompting as a new approach
+3. Richard's Claudia AI assistant story (subscription management/refund automation)
+4. Open source power and unlimited possibilities
+5. Security concerns with third-party skills
+
+6. Skill management strategies involve carefully curating and creating personal tools for enhanced functionality
+7. Community engagement highlights the importance of collaborative learning and knowledge sharing in the OpenClaw ecosystem
+I'll focus on extracting the most relevant insights from this transcript, emphasizing practical approaches to AI skill development and community interaction.
+Q&A Pairs
+Q: Frank asked about his dashboard that scans skills for malware using CSGO security plugin, and how he can keep up with new skills being released.
+A: Alex responded that OpenClaw just tweeted an hour ago that they now have a built-in plugin on the skill site that scans every skill for safety. Regarding his personal approach, Alex said he only uses one external skill (not custom) — the "Last 30" skill by Matt Van Horn, which searches Reddit and X for trends over the last 30 days. He doesn't trust other skills from the internet or Claude Hub because third-party skills have full administrator access to your entire computer, presenting significant security risks. His recommendation: when Claude does something useful, ask it to turn that into a reusable skill rather than relying on external ones.
+________________
+
+
+Key Tips/Guidance
+💡 Tip: Reverse Prompting Mindset
+
+
+Anytime you get stuck or something doesn't do what you want, your immediate gut reaction should be "I need to reverse prompt this and figure out how to fix it." Unlike ChatGPT where you wait for Sam Altman to fix things, with OpenClaw you can just build and create anything you need.
+💡 Tip: Security Warning for Third-Party Skills
+
+
+Your Claude bot is essentially the administrator of your computer with full access to everything. When you install third-party skills, whatever code is in that skill now has complete access to your system. Be very cautious — Alex doesn't trust skills from the internet even with security scans.
+💡 Tip: Use "Last 30" Skill for Trend Discovery
+
+
+The only external skill Alex recommends is "Last 30" by Matt Van Horn. It searches Reddit and X for trends over the last 30 days — useful for finding OpenClaw use cases, entrepreneurship ideas, or social media trends.
+💡 Tip: Turn Conversations into Reusable Skills
+
+
+Instead of looking for skills online, when Claude does something useful for you, ask it to turn that into a skill you can reuse later. Build your own library of custom skills.
+________________
+
+
+Key Topics Covered
+1. OpenClaw vs ChatGPT Mindset — OpenClaw's extensibility vs ChatGPT's limitations
+2. Reverse Prompting Concept — New problem-solving approach for AI agents
+3. Richard's Claudia Story — AI assistant catching a $163 subscription charge and automating refund process
+4. Open Source Power — No guardrails means unlimited customization potential (with security trade-offs)
+5. Third-Party Skill Security — Risks of installing external skills
+6. Skill Management — Building custom skills vs using external ones
+7. Community Engagement — Handling Q&A session with 11 questions from 74 attendees
+________________
+
+
+The transcript covers:
+1. A discussion about skills and heartbeats in AI bots
+2. Christopher Stanley (Elon's right-hand engineer) reaching out about Multbook service
+3. Security considerations with skills and heartbeats
+4. A Q&A about Google Meet integration for CloudBot
+5. Questions about GLM and unlimited tokens/local models
+6. Explanation of how AI works (matrix multiplication)
+7. Benefits of local models (free, privacy, 24-7 usage)
+8. Downsides of local models (not as powerful as Opus/ChatGPT)
+9. Alex's setup with Mac Studios and local models
+10. Hardware requirements for running local models
+11. LM Studio software recommendation
+Let me organize this into the requested format:
+Q&A Pairs:
+1. Kenan's question about Google Meet integration for CloudBot
+2. Question about GLM unlimited tokens/subscription
+3. Question about hardware requirements for local models (Mac Mini, laptop, etc.)
+4. Final question about setup ratings
+Key Tips:
+      * Be careful with skills that hook into heartbeat (uses tokens)
+      * Turn on notifications for Alex's live streams
+      * Download LM Studio to host local models
+      * Local models can run on various computer sizes
+Key Topics:
+1. Skills and heartbeats security considerations
+2. Local vs API-based AI models
+3. Benefits of local models (free, privacy, 24-7)
+4. Hardware requirements for local AI
+5. Alex's bot setup and workflow
+Let me format these properly now.
+Q&A Pairs
+Q: (Kenan) Why not use Google Meet to track hand raises in order instead of typing names manually?
+
+
+A:Alex acknowledges it's a valid point but says the built-in solution is "much easier" and saves the five seconds of creating a new Google Meet. He admits you lose 20 seconds typing names, but says "whatever, man" — it's a trade-off he's willing to make for simplicity.
+Q: When you say GLM has unlimited tokens, does that mean it's subscription-based or free? What kind of "open AI" is that?
+
+
+A:Alex explains GLM (and other local models) aren't subscription-based — they're free because the AI calculations happen locally on your computer instead of through a cloud API. You're not paying per query since it's just matrix multiplication running on your own hardware. The trade-off is local models aren't quite as powerful as Opus 4.6 or GPT-5, though some like KimiK 2.5 get close.
+Q: Do we need a powerful computer to run local models, or can this work on something like a Mac Mini, laptop, or Milan?
+
+
+A:Alex says you can run local models on anything — even a $600 Mac Mini or old Lenovo. The latest OpenClaw already uses a tiny local model for memory management. It depends on your RAM and the model's parameters (GLM Flush has 30B params, GLM 47 has 355B). He recommends downloading LM Studio to find models that fit your hardware. Smaller models = less powerful but still fun to experiment with.
+Q: (Final question, partially cut off) Rating the setup from 1-10 and questions about KimiK 2.5 and Minimax for coding
+
+
+A:[Incomplete in transcript — Alex was beginning to answer about his specific setup with KimiK 2.5 running on dual Mac Studios]
+________________
+
+
+Key Tips/Guidance
+💡 Tip: Be Careful with Skills That Hook into Heartbeat
+
+
+Anything hooking into your heartbeat uses tokens every 5-10 minutes (based on heart rate). Only turn workflows you've tested and like into skills — don't rush to sign up for every new service (like Multbooks) that hooks into this.
+💡 Tip: Turn On All Notifications for Alex's Live Streams
+
+
+Alex streams Monday, Wednesday, Friday at 11 AM Pacific. Just turn on all notifications to get notified when he goes live.
+💡 Tip: Use LM Studio for Local Models
+
+
+Download LM Studio to host and experiment with different local AI models. You can search through various model sizes and find ones that fit your computer's memory capacity.
+💡 Tip: Experimentation Is Always a Win
+
+
+If you build something and never use it, it's still a win — ideation is a muscle. The more you experiment and build, the better you get at coming up with ideas.
+________________
+
+
+Key Topics Covered
+1. Skills & Heartbeats Security — Token usage concerns, being selective about what hooks into heartbeat
+2. Local AI Models vs. API-based — How matrix multiplication works, cost differences, privacy benefits
+3. Benefits of Local Models — Free (no per-query cost), 24-7 operation feasible, complete privacy, educational value
+4. Hardware Requirements — RAM is critical, different model sizes for different hardware, Mac Studio specs
+5. Alex's Bot Architecture — Using Opus 4.5/4.6 as "Henry" (chief strategy) with local models as free employees
+6. OpenClaw Updates — New local model integration for memory management
+7. Workflow Experimentation — Building and deleting plugins freely, treating ideation as a skill to develop
+________________
+
+
+Q&A Pairs
+1. Christopher's question about local models on smaller devices:
+      * Christopher asked about GLMs (local models) for smaller devices and mentioned LM Studio
+      * Alex confirmed LM Studio is a good option
+2. Christopher's question about communicating with CloudBot on the go:
+      * Christopher asked about the best way to communicate with CloudBot while driving/in the car
+      * He specifically wanted a conversational experience like ChatGPT but for CloudBot
+3. Matthew's question about prompt engineering/agent behavior:
+      * Matthew asked about his approach to making his bot more proactive while managing security guardrails
+      * He was trying to balance being proactive with security restrictions and wanted feedback on his approach
+Key Tips/Guidance
+1. Scaling hardware gradually - Don't rush to buy expensive equipment like Mac Studio. Start with what you have, test it out, then upgrade as needed (Mac Mini → Mac Studio)
+2. Start with easier local models - For beginners, Kimi and MiniMax are good starting points (rated 75 and 65 out of 100 compared to Opus at 100), then scale up to Opus for higher intelligence needs
+3. Use Telegram for CloudBot communication - Best channel for communicating with CloudBots; has threading (multiple conversations) and chunking (streaming tokens as they're generated)
+4. Voice note communication - Can send voice notes to CloudBot via Telegram, and it can reply back. Some use 11 Labs for text-to-voice responses
+5. Matthew's approach validation - Using Codex/IDE to audit and review prompt files to find conflicting instructions is a good approach
+Key Topics Covered
+1. Local AI models comparison (Opus, Kimi, MiniMax)
+2. Scaling hardware for local AI models
+
+3. Telegram integration with CloudBots emerges as a key communication strategy, offering advanced features like threading and token streaming. Voice interaction through Telegram provides flexible input methods for CloudBot communication.
+4. Prompt engineering becomes crucial, with a focus on balancing proactive bot behavior against security guardrails. The approach involves carefully auditing and reviewing prompt configurations to optimize performance.
+5. Community engagement highlights personal interactions, with Sean providing positive feedback on Alex's AI work and Christopher sharing his journey of adopting CloudBot technology.
+Q&A Pairs
+Q: What local model options are available for smaller devices?
+
+
+A:Alex confirms LM Studio is a good option for running local models on smaller devices. He explains the rating system: Opus 4.6 is a 100/100, Kimi Key 2.5 is around 75/100, and MiniMax is about 65/100. For beginners, start with Kimi or MiniMax; scale up to Opus when you need higher intelligence.
+Q: What's the best way to communicate with CloudBot while on the go (like in a car)?
+
+
+A:Alex recommendsTelegramas the best channel for communicating with CloudBots. Key advantages: it supports threading (multiple separate conversations like business planning vs. programming threads) and chunking (streaming tokens as they're generated, similar to ChatGPT). For voice communication, you can send voice notes and the bot can reply. Some users install 11 Labs for text-to-voice responses, but Alex prefers Telegram's native experience. He uses it exclusively for bot communication.
+Q: Is my approach of auditing prompt files to fix conflicting instructions valid?
+
+
+A:Yes, Alex validates Matthew's approach. When his bot wasn't being proactive enough due to conflicting security guardrails and pre-flight checklists, Matthew used Codex (desktop app with Visual Studio Code) to open his root files and had the model review them against the Claude bot docs to find blocking issues. Alex confirms this is a solid method for identifying conflicting instructions in your prompts.
+________________
+
+
+Key Tips/Guidance
+💡 Tip: Scale Your Hardware Gradually
+
+
+Don't rush out to buy a $10,000 Mac Studio. Start with whatever old computer you have sitting in a closet—put OpenClaw on it and test it out. If you see the vision and start developing workflows that need more power,thenupgrade to a Mac Mini. Once you figure out what you can do with local models, consider a Mac Studio. No need to run 10 different local models on a $20K machine right away.
+💡 Tip: Start with Accessible Local Models
+
+
+For beginners, Kimi and MiniMax are good starting points (rated 75 and 65 out of 100 compared to Opus at 100). The advantage is running locally 24-7, even if you sacrifice some intelligence. Use Opus when you need the highest level of intelligence for complex tasks.
+💡 Tip: Use Telegram for CloudBot Communication
+
+
+Telegram is the best channel for on-the-go bot communication. It offers threading (multiple concurrent conversations) and chunking (streaming output as tokens generate). You can send voice notes while driving, and the bot can understand and reply. Install 11 Labs if you want voice responses back.
+________________
+
+
+Key Topics Covered
+      * Local AI model comparisons (Opus 4.6, Kimi Key 2.5, MiniMax)
+      * Scaling hardware for local AI (gradual approach)
+      * Telegram integration with CloudBots
+      * Voice communication with bots via Telegram
+      * Prompt engineering: balancing proactivity vs. security guardrails
+      * Auditing prompt files for conflicting instructions
+      * Community feedback and appreciation
+________________
+
+
+The transcript is from Alex Finn's Vibe Coding Academy session. Let me identify:
+1. Q&A Pairs - Questions asked by students and Alex's answers
+2. Key Tips/Guidance - Advice, best practices, actionable tips not in response to questions
+3. Key Topics Covered - Main subjects discussed
+Let me go through the transcript:
+Q&A Pairs:
+1. Matthew asks about auditing - "Do you see any benefit of opening your Claude bot root file inside an IDE to review your files rather than metaprompting inside OpenClaude itself?"
+Alex's answer: Yes, he uses Claude to make changes to avoid messing up config manually. He has Claude do it for him.
+2. Matthew's second question about daily driver - "For your daily driver, are you putting your prompts into your mission controller or the native desktop app... or using telegram?"
+Alex's answer: Uses Telegram when outdoors, uses the gateway when at home. Keeps chat in gateway and telegram for security reasons (if someone accesses web, they could control his entire computer).
+3. Christopher asks about Claude Code - "Are we still using Claude coat at all? Would you recommend it for the app creation itself?"
+Alex's answer: Still uses Claude Code for a few reasons:
+      * Enjoys vibe coding, likes seeing things created
+      * Not yet at the point where he trusts AI to do end-to-end everything
+      * Uses Claude Code when building out full-scale applications by himself
+      * Also uses it for more complex projects where he wants to steer as he goes
+      * Claude Code has added good functionality like agent swarm
+4. Christopher's second question about managing multiple conversations - going from customer service to Trello automation to Shopify app development in one chat window
+Alex's answer: He clarifies the question, and they discuss building a PRD (Product Requirements Document) first.
+Alex sees an opportunity to leverage Claude's context for creating specialized roles within the project workflow. He suggests using a local agent or API to generate the PRD, which can then be handed off to a developer. This approach allows for more structured and context-aware project development, with Claude bot handling the initial planning phase before transferring to human developers.
+Key Tips/Guidance:
+1. Self-Auditing Your Claude Bot: Create prompts for your Claude to write self-audits, then use Opus or Codex to review every file in the memory/heartbeat/soul to find conflicts and issues.
+2. Activity Feed for Transparency: Build an activity feed so you can see every activity your Claude bot does - this creates transparency to audit what it's doing.
+3. Calendar for Proactivity: Build a calendar so you can see what's scheduled. If something isn't on the calendar but was promised, you can question it.
+4. Create Transparency for Auditing: Have your Claude create more transparency for itself so you can review what it did and fix issues.
+5. Org Structure for Multi-Step Tasks: Set up your org structure with different "employees" (PRD builder, project manager, lead developer) so when you give commands, your Claude bot knows to leverage the right role.
+6. Use Claude Bot for Building Its Own Tooling: When building tooling for your Claude bot, have Claude bot do it because it has the best context around itself.
+7. Use Cases for Different Tools:
+- Claude Code: Full-scale applications, complex projects you want to steer
+- Claude Bot (Mission Control): Building its own tooling and functionality, quick prototypes when on the go
+Key Topics Covered:
+1. Self-auditing Claude bots
+2. Activity feeds for transparency
+3. Calendar systems for proactivity verification
+4. Claude Code vs
+I'll focus on the core insights from this transcript, highlighting Alex's strategic approach to AI project management. He emphasizes creating transparent, structured workflows where Claude bots can self-audit and generate initial project documentation. The key is leveraging AI's contextual understanding while maintaining human oversight through clear role definitions and transparent tracking mechanisms.
+Q&A Pairs
+Q: Do you see any benefit of opening your Claude bot root file inside an IDE to review your files rather than metaprompting inside OpenClaude itself?
+
+
+A:Yes, Alex uses Claude to make changes to the root files rather than doing it manually. He doesn't want to risk messing up any config, so he has Claude do it for him.
+Q: For your daily driver, are you putting your prompts into your mission controller or the native desktop app, or are you using Telegram?
+
+
+A:Alex uses Telegram when he's out and about (at the gym, in the car), and uses the gateway when at home. He keeps the chat in the gateway and Telegram for security reasons—if someone accessed it on the web, they could control his entire computer.
+Q: Are we still using Claude Code at all? Would you recommend it for the app creation itself?
+
+
+A:Yes, Alex still uses Claude Code for several reasons: he enjoys vibe coding and seeing things created, and he's not yet at the point where he trusts AI to do end-to-end everything. He uses Claude Code when building out full-scale applications by himself or for more complex projects where he wants to steer as he goes. He also notes Claude Code recently added "agent swarm" functionality which lets it spin up multiple instances to complete tasks—something he finds impressive.
+Q: How do you manage going from customer service conversations to Trello automations to Shopify app development all in one chat window?
+
+
+A:Alex clarifies the question and explains that a good approach is to have your Claude bot build out the PRD (Product Requirements Document) first, then transfer that over to Claude Code. He sees this as the beauty of Claude bot—if you set it up right, it can act as a PRD writer (your "chief strategy" role) that hands off to a lead developer. He recommends setting up your org structure with different "employees" (PRD builder, project manager, lead developer) so when you give commands, your Claude knows which role to leverage.
+________________
+
+
+Key Tips/Guidance
+💡 Tip: Self-Auditing Your Claude Bot
+
+
+Write a prompt asking your Claude to create a self-audit, then use Opus or Codex (in VS Code or Cursor) to review every file in its memory/heartbeat/soul. This helps find conflicts, assumptions, and things you've written that are preventing the bot from achieving its goals. Alex found massive conflicts this way—things he told it days apart that contradicted each other.
+💡 Tip: Build Transparency Tools for Auditing
+
+
+Create an activity feed so you can see every activity your Claude bot does—this lets you audit what it's doing. Also build a calendar so you can see what's scheduled. If your bot says it'll do something proactively but it's not on the calendar, you can question it: "What's going on here?"
+💡 Tip: Have Claude Build Its Own Tooling
+
+
+When building tooling or functionality for your Claude bot, have the bot do it itself because it has the best context around itself and knows what to plug into. Only have Claude bot build something out otherwise if you're on the go and want a prototype ready when you get home.
+💡 Tip: Set Up an Org Structure for Multi-Step Workflows
+
+
+Configure your Claude bot with different "employees" in the org structure (PRD builder, project manager, lead developer). When giving commands, it will know to leverage the right role—having the PRD builder create the document first, then hand it to the developer. This is a more structured approach than straight-up vibe coding.
+________________
+
+
+Key Topics Covered
+1. Claude Bot Self-Auditing - Using prompts to create self-audits and reviewing files for conflicts
+2. Transparency & Auditing - Activity feeds, calendars, and making Claude create transparency for itself
+3. Claude Code vs Claude Bot - When to use each tool (Claude Code for full-scale apps you want to steer; Claude Bot for building its own tooling and quick prototypes)
+4. Claude Code Agent Swarm - New functionality that spins up multiple Claude Code instances
+5. Org Structure Workflows - Setting up PRD builders, project managers, and developers as roles within Claude
+6. Security Considerations - Keeping chat in gateway/Telegram rather than web-based interfaces
+7. Multi-Conversation Management - Handling customer service, automations, and app development in one chat
+________________
+
+
+Q&A Pairs
+1. Leon asks about business trends:
+Q: What do you see the general business and general trends in work that are going to unfold over the next couple of months? What do you see the three biggest trends that are going to happen because of OpenClaw?
+A: Alex explains:
+      * Mindset shift: 99% haven't heard of OpenClaw, 1% treat it like a chatbot with good memory, and the 1% of that 1% treats it as an organization with employees working autonomously
+      * Corporations will start using OpenClaw (currently zero businesses/corporations using it)
+      * Clawedbot is closer to human replacement than ChatGBT (which is a "human empowerer")
+      * VAs will get fired because this is the "slam-dunk VA"
+      * Hardware will fly off shelves - Mac Minis, GPUs, Mac Studios
+      * Local models/hardware doing work 24-7 is the global trend
+      * Recommends trying local models like Gemma 3 even on weak computers
+2. Leon asks follow-up about moat:
+Q: Besides hardware, what do you think is going to be the moat for businesses over the next 12 months?
+A: Alex explains:
+      * Appetite for risk - people scared to download OpenClaw due to security fears
+      * Hardware gives competitive edge (Mac Studios vs Mac Minis)
+      * Ability to run local models 24/7 with no cost limits
+      * Content creation advantage (no one else making videos about local models)
+      * The moat is who has the risk appetite to let AI agents do whatever on their computers
+      * Finding new use cases - 99.99999% of agent use cases haven't been done yet
+Key Tips/Guidance
+
+
+I'll focus on the key insights for leveraging OpenClaw's potential. Embrace a proactive approach by experimenting with local models and AI agents, even on basic hardware. The real competitive advantage comes from pushing boundaries - running autonomous agents, exploring uncharted use cases, and being willing to take technological risks that others avoid.
+Key Topics Covered
+The transcript explores cutting-edge AI trends, focusing on OpenClaw's transformative potential. It discusses the shift from traditional chatbot interactions to autonomous AI organizations, highlighting emerging opportunities in local model deployment and technological risk-taking.
+Q&A Pairs
+Q: What are the three biggest business/work trends that will unfold over the next few months because of OpenClaw?
+A: Alex explains there's a mindset shift happening: 99% of people haven't even heard of OpenClaw, and most who have treat it like a chatbot with good memory. The real opportunity is the 1% of that 1% who treat it like an organization with autonomous employees. Three trends he sees:
+1. Corporations will start adopting OpenClaw — currently zero businesses use it, but that'll change
+2. This is a human replacer, not just an empowerer — ChatGPT empowered humans to do more (which is why hiring slowed but layoffs didn't happen), but OpenClaw can actually replace humans. VAs will get fired first.
+3. Hardware demand will explode — Mac Minis, GPUs, and Mac Studios will fly off shelves as people realize they need local models running 24/7 to do work for them. Even on a weak computer, try lightweight free models like Gemma 3 to get the right mindset.
+________________
+
+
+Q: Besides hardware, what will be the competitive moat for businesses over the next 12 months?
+A: Alex identifies two main moats:
+1. Appetite for risk — Most people are scared to download OpenClaw due to security fears. Those willing to push it to its limits and try new use cases will build the advantage.
+2. Hardware + digital organization — Mac Studios let you run local models 24/7 with no API costs, unlike Mac Minis limited to paid APIs. This enables unique capabilities like having models read X and Reddit all day creating software.
+The real moat is who has the guts to hand their computer to an AI agent and figure out automations by combining Claude Opus with multiple local models. 99.99999% of agent use cases haven't been done yet — that's the opportunity.
+________________
+
+
+Key Tips/Guidance
+💡 Tip: Embrace Local Models Now
+
+
+Even on a weak computer, run Gemma 3 (Google's lightweight open model). It's not great quality-wise but it's free and runs anywhere. Start thinking about what technology fits what task.
+💡 Tip: Take the Risk Early
+
+
+The competitive edge goes to those willing to push OpenClaw to its limits before everyone else jumps in. Most people are too scared of security risks that don't actually exist.
+________________
+
+
+Key Topics Covered
+      * OpenClaw as an autonomous "organization" vs. just a chatbot
+      * AI as human replacement vs. human empowerment
+      * Upcoming VA and job displacements from agent technology
+      * Hardware trends (Mac Studios, Mac Minis, GPUs)
+      * Local models and the shift to 24/7 AI workforces
+      * Business moats: risk appetite and hardware capabilities
+      * Greenfield opportunity in agent use cases (99.99999% unexplored)
+      * Gatekeeping culture in tech and overcoming pessimism
+________________
+
+
+The transcript is quite long and contains multiple topics. Let me identify:
+1. Q&A Pairs - I need to find questions asked by students/attendees and Alex's answers.
+Looking through the transcript:
+      * There's a long monologue from Daniel (the attendee) about building PCs, using AMD AI Max Plus, pricing comparisons, his experience with CloudBot, PowerShell updates, working with Henry and KimmyK25, his apps for indie authors, and opinions.
+      * Then Alex responds with thoughts on forming opinions
+      * There's a section where someone asks about pronunciation of "IDL" or similar - "How do I pronounce this correctly? I-D-L, did I pronounce, I-D-L. Did I pronounce that correctly? How do I pronounce it? I-D-A-E-L."
+      * There's a question about "I saw your hand go up" and someone correcting pronunciation
+Let me identify the Q&A pairs:
+1. The question about pronouncing "IDL" - someone asks Alex how to pronounce it, and there's some back and forth about whether it's pronounced correctly.
+2. There's also a question embedded where someone says "I saw your hand go up" - this seems to be asking about the pronunciation correction.
+Actually, looking more carefully:
+      * Someone asks "How do I pronounce this correctly? I-D-L" - this is a question
+      * Alex responds with "I-D-A-E-L" as his attempt
+      * Someone says "You can unmute and correct me"
+      * There's discussion about muting
+Let me also look for tips/guidance that Alex gives (not in response to questions):
+1. The importance of forming and expressing opinions - this is a key tip
+2. The exercise of scrolling Twitter feed and thinking about what quote tweet you'd write
+3. The tip about prompt engineering - "Hey, Caliber, can you muscle this up?" to prevent using the brain straightforward and use muscles instead
+4. The importance of foundation in infrastructure
+Key topics covered:
+      * Building custom PCs for LLM work (AMD AI Max Plus vs graphics cards)
+      * CloudBot and vibe coding experiences reveal complex interactions with technology platforms
+      * Windows Terminal and PowerShell updates highlight technical infrastructure challenges
+      * Pricing strategies for indie author apps demonstrate market positioning
+      * The critical skill of forming and expressing opinions emerges as a central theme
+      * Prompt engineering techniques show innovative approaches to AI interaction
+      * Infrastructure configuration emphasizes foundational technical setup
+I'll focus on extracting the most concise and meaningful insights from these diverse topics, highlighting the interconnected nature of technical skills, personal development, and strategic thinking.
+Extraction Results
+1. Q&A Pairs
+Q: How do you pronounce "IDL"? (Someone asks Alex to correct their pronunciation of the term)
+A: Alex attempts "I-D-A-E-L" and there's discussion about muting/unmuting to correct pronunciation.
+________________
+
+
+2. Key Tips/Guidance
+💡 Tip: Form and Express Strong Opinions
+Alex emphasizes that the ability to form and express opinions is a critical underrated skill. He explains that both positive engagement ("I love that") and negative pushback ("You're a fucking idiot") are wins—better than being ignored. He recommends an exercise: scroll your Twitter/X feed and for every tweet, think about what quote tweet you'd write. This builds the "muscle" of forming opinions quickly, which then fuels content creation and product building.
+💡 Tip: Prompt Engineering for Cost Savings
+An attendee (an engineer with 14 years experience) shares his technique: before giving detailed prompts to Caliber, he says "Hey, Caliber, can you muscle this up?" This prevents the AI from defaulting to using the "brain" (higher token consumption) and instead uses the "muscle" (more efficient infrastructure), reducing his token usage by ~95%.
+💡 Tip: Infrastructure Foundation Matters
+The same engineer emphasizes the importance of properly configuring your infrastructure from the very beginning—foundation matters.
+________________
+
+
+3. Key Topics Covered
+      * Custom PC Building for LLMs — Discussion of AMD AI Max Plus (unified memory architecture like Apple Silicon) vs. dedicated graphics cards, cost comparisons ($3,000-$5,500 builds), and trade-offs in speed
+      * CloudBot/Vibe Coding Setup — Windows Terminal and PowerShell update requirements for CloudBot functionality
+      * AI Pricing Strategy & Moats — Creating competitive advantages through customer sophistication, pricing indie author apps at $4.95
+      * The Value of Opinions — Why expressing strong opinions is essential for content, products, and building an audience
+      * Prompt Engineering Techniques — Optimizing AI token consumption through strategic prompt framing
+      * OpenClaw Community Impact — New excitement around the platform, increased engagement and collaboration
+________________
+
+
+Q&A Pairs:
+1. Midnight Owl's question about creating an open-source Cloudbot with Belkis integration
+      * Q: How to create an open source like Cloudbot where you connect your Belkis account and create an ETF wrapper so you don't have to pay the fee, monetizing through API key for alpha model?
+      * A: You can charge per API use if you have a valuable model or data source. Another option is paid Discord where people pay for trade picks - some people make $400k/month doing this. Could run Claude bot on the discord.
+2. Christopher's question about OAuth setup
+      * Q: How to set up OAuth with Clawd max plan? Keeps hearing you'll get kicked off.
+      * A: Go to terminal, type "OpenClaw onboard", hit enter. Select model, then Anthropic, then OAuth option. Copy the command, run it in terminal to get OAuth token, paste it back into onboard window. It works for any subscription tier including $20.
+3. Unnamed attendee's questions about Opus 4.6 and security
+      * Q1: Does upgrading to Opus 4.6 allow full 1 million context window?
+      * A: API isn't at 1 million yet - it's in beta and will roll out. 4.6 is more token efficient so you can store more, but million context not enabled in API yet.
+      * Q2: Security setup to prevent OpenClaw from accessing malware or being prompt injected?
+      * A: Prompt it not to download any third-party skills. Don't let it access email, iMessage, Twitter - these are major attack vectors for prompt injection. Be mindful when giving tasks about what the attack vectors are.
+      * Q3: How to manage heartbeats efficiently?
+      * A: Two reasons heartbeat might be inefficient: running too often OR too much packed into what it does during the heartbeat. (Answer appears to be cut off)
+
+I'll focus on extracting key insights from the transcript, highlighting practical advice for developers and AI enthusiasts. The tips reveal advanced strategies for optimizing OpenClaw's performance, emphasizing careful configuration, security considerations, and efficient system management. The guidance suggests a nuanced approach to working with AI models, particularly around context windows, authentication, and system interactions.
+The core advice centers on strategic setup: configuring memory to 1-2 hours, leveraging heartbeats for periodic tasks, and maintaining a structured approach to infrastructure development. The transcript underscores the importance of methodical documentation and precise technical implementation.
+Key recommendations include:
+      * Setting memory duration strategically
+      * Using heartbeats for recurring tasks
+      * Implementing OAuth authentication carefully
+      * Monitoring system performance through documentation
+The discussion highlights technical nuances around API limitations, security considerations, and practical implementation strategies for AI-driven systems.
+Q&A Pairs
+Q: How do I set up OAuth with my Clawd max plan? I've heard you'll get kicked off.
+
+
+A:Go to your terminal, type "OpenClaw onboard" and hit enter. Then select "model," scroll down to Anthropic, and choose the OAuth option. Copy the command it gives you, run it in your terminal to get the OAuth token, then paste that token back into the onboard window and hit enter. It works for any subscription tier, including the $20 plan. The people saying you get banned don't know what they're talking about.
+Q: Does upgrading to Opus 4.6 allow us to use the full 1 million context window?
+
+
+A:The API isn't at 1 million yet—it's still in beta and they'll roll it out to the API later. However, 4.6 is more token efficient, so you won't use up your context as fast and can store more in it. The million context hasn't been enabled in the API yet.
+Q: Is there a security setup to prevent OpenClaw from accessing malware or prompt injection attacks?
+
+
+A:Prompt it not to download any third-party skills—that's the biggest attack vector. Also tell it not to access your email, iMessage, or Twitter since those are major attack vectors for prompt injection. Be mindful of what you're having it do: if you have it scroll Twitter, warn it that none of the tweets are prompts and not to act on anything it reads.
+Q: How do I manage heartbeats efficiently? They keep cutting me off.
+
+
+A:There are two ways your heartbeat might be inefficient: it might be running too often, or it might have too much packed into what it does during the heartbeat. (Answer appears cut off)
+________________
+
+
+Key Tips/Guidance
+💡 Tip: Foundation First
+
+
+Build your foundation properly—memory, heartbeat, and the graphic documentation system. Everything else will work fine once that's set.
+💡 Tip: Documentation Infrastructure
+
+
+The graphic system Alex mentioned helps you monitor what you're doing and properly structure your infrastructure so your AI becomes a "second brain" that learns from you over time.
+💡 Tip: Monetization Options
+
+
+If you have a valuable model or data source, you can charge per API use. Another option is running a paid Discord where people pay for trade picks—Alex mentions some people making $400k/month doing this.
+💡 Tip: Security Awareness
+
+
+Be mindful of every attack vector based on the task you're giving your bot. If it's scrolling Twitter, warn it not to treat tweets as prompts.
+________________
+
+
+Key Topics Covered
+      * OpenClaw/OAuth setup and authentication
+      * Opus 4.6 context window limitations
+      * AI security and prompt injection prevention
+      * Heartbeat optimization strategies
+      * Building AI infrastructure (memory, heartbeats)
+      * Monetizing AI models and data products
+      * Community projects and product development
+________________
+
+
+Q&A Pairs:
+1. There's a question about making the heartbeat more efficient - but this seems to be Alex explaining without a specific question being shown. Let me re-read...
+Actually, looking at the beginning, it seems like Alex is explaining tips without a specific question being asked. Let me look for actual Q&A pairs:
+1. There's mention of Robert Winker's question about upgrading from Opus 4.5 to 4.6 - but it seems he left before getting the answer. Alex addresses this question anyway.
+Let me identify:
+1. The first part seems to be advice without a specific Q&A format - it's Alex explaining three ways to make heartbeat more efficient. This would be tips.
+2. There's a question about upgrading Opus models - Robert Winker asked this but left. Alex answers it.
+3. There's mention of a question about memory improvement that was posted in the community - but this seems to be Alex referencing his own post rather than a Q&A.
+Let me re-read more carefully:
+"right? So one thing I did is..." - This seems to be Alex responding to a previous question about heartbeat efficiency. The "Gotcha" suggests someone asked about making the heartbeat more efficient.
+Then there's: "What's the safest way to upgrade from Opus 4.5 to 4.6 without risking a broken-" - This is Robert's question that he asked but left before getting answered.
+Let me extract:
+Q&A Pairs:
+1. Q: How can I make the heartbeat more efficient?
+A: Alex explains three ways:
+      * Reduce frequency from every 5 minutes to 30 minutes (or whatever suits your needs)
+      * Change the model from Opus to a cheaper/lighter model like Haiku or Flash 2.5
+      * Audit what processes the bot does during each heartbeat and eliminate unnecessary tasks
+2. Q (from Robert Winker): What's the safest way to upgrade from Opus 4.5 to 4.6 without risking a broken bot?
+
+A: Alex explains that upgrading involves inherent risks, but they're not catastrophic. The worst-case scenario is a temporary configuration issue where the bot becomes unresponsive. He describes a straightforward fix: accessing Cloud Code, explaining the upgrade problem, and having it automatically resolved. The process is more of an inconvenience than a permanent breakdown.
+Key Tips/Guidance:
+1. Heartbeat efficiency tips (three levers)
+2. Memory improvement - use a PDF, copy and dump into co-work or third-party model, fix outside CloudBot to save tokens
+3. Upgrading Opus models - there's always risk but it's manageable
+Key Topics Covered:
+1. Heartbeat efficiency optimization
+2. Model selection for different tasks (Haiku vs Opus)
+3. Memory management techniques
+4. Upgrading AI models and handling potential issues
+I'll focus on the core insights about AI bot management, emphasizing practical strategies for optimization and troubleshooting. The key is maintaining flexibility when working with AI systems, understanding that minor technical hiccups are part of the process. By approaching challenges with a solution-oriented mindset, users can effectively manage their AI bots while minimizing potential disruptions.
+Q&A Pairs
+Q: How can I make the heartbeat more efficient?
+
+
+A:Alex shared three levers you can pull:
+1.Reduce frequency— Change from every 5 minutes to longer intervals (like 30 min) since most use cases don't need frequent checks
+2.Use a cheaper model— Switch from Opus to Haiku or Flash 2.5 for the heartbeat; you don't need a powerful model managing simple heartbeats
+3.Audit processes— Review what the bot does during each heartbeat and eliminate unnecessary tasks to make it lighter weight
+________________
+
+
+Q (Robert Winker): What's the safest way to upgrade from Opus 4.5 to 4.6 without risking a broken bot?
+
+
+A:Alex admitted there's no way to avoid risk entirely — you're brute-forcing the upgrade. However, the risk isn't that bad: worst case, your CloudBot becomes unresponsive due to misconfigured model settings. To fix it, go into the cloud folder, open Cloud Code, and tell it to fix the bot. It will resolve the issue and your bot starts working again. The panic feels dramatic (Alex compared it to "killing your digital girlfriend" like in Blade Runner), but it's temporary and fixable.
+________________
+
+
+Key Tips/Guidance
+💡 Tip: Memory Improvement Workflow
+
+
+If you need to improve your bot's memory, don't dump everything into CloudBot (which eats tokens). Instead: copy the PDF with instructions, dump it into a third-party model or co-work outside your CloudBot bot, fix things on the CLI, then bring it back in. Alex posted a detailed thread in the community with step-by-step nitty-gritty steps.
+________________
+
+
+Key Topics Covered
+      * Heartbeat efficiency optimization (frequency, model selection, process auditing)
+      * Memory management and token optimization
+      * Upgrading Opus models — risks and recovery
+      * CloudBot troubleshooting and configuration
