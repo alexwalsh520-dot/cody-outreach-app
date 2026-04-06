@@ -175,7 +175,7 @@ export default function KnowledgePage() {
       !q ||
       l.first_name?.toLowerCase().includes(q) ||
       l.email?.toLowerCase().includes(q) ||
-      l.instagram_username?.toLowerCase().includes(q)
+      l.instagram_handle?.toLowerCase().includes(q)
     )
   })
 
@@ -233,6 +233,28 @@ export default function KnowledgePage() {
               className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
             />
             <span className="text-xs text-gray-500">{filtered.length} leads</span>
+            <button
+              onClick={() => {
+                const headers = ['first_name','full_name','email','email_source','instagram_handle','follower_count','youtube_channel','status','batch_date','bio','notes']
+                const csvRows = [headers.join(',')]
+                filtered.forEach(l => {
+                  csvRows.push(headers.map(h => {
+                    const v = String((l as Record<string,unknown>)[h] ?? '')
+                    return v.includes(',') || v.includes('"') || v.includes('\n') ? `"${v.replace(/"/g,'""')}"` : v
+                  }).join(','))
+                })
+                const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `leads_${new Date().toISOString().split('T')[0]}.csv`
+                a.click()
+                URL.revokeObjectURL(url)
+              }}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-colors"
+            >
+              Download CSV
+            </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -241,11 +263,12 @@ export default function KnowledgePage() {
                   {[
                     { key: 'first_name', label: 'Name' },
                     { key: 'email', label: 'Email' },
-                    { key: 'instagram_username', label: 'Instagram' },
-                    { key: 'followers', label: 'Followers' },
-                    { key: 'engagement_rate', label: 'Eng Rate' },
+                    { key: 'email_source', label: 'Source' },
+                    { key: 'instagram_handle', label: 'Instagram' },
+                    { key: 'follower_count', label: 'Followers' },
+                    { key: 'youtube_channel', label: 'YouTube' },
                     { key: 'status', label: 'Status' },
-                    { key: 'created_at', label: 'Added' },
+                    { key: 'batch_date', label: 'Batch' },
                   ].map((col) => (
                     <th
                       key={col.key}
@@ -260,7 +283,7 @@ export default function KnowledgePage() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-gray-500 text-sm">
+                    <td colSpan={8} className="px-4 py-12 text-center text-gray-500 text-sm">
                       No leads yet. Scout will populate this table.
                     </td>
                   </tr>
@@ -268,24 +291,27 @@ export default function KnowledgePage() {
                   filtered.map((lead) => (
                     <tr key={lead.id} className="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors">
                       <td className="px-4 py-2.5 text-white font-medium">{lead.first_name || '—'}</td>
-                      <td className="px-4 py-2.5 text-gray-400 font-mono text-xs">{lead.email || '—'}</td>
+                      <td className="px-4 py-2.5 text-gray-400 font-mono text-xs">{lead.email || <span className="text-gray-600">pending</span>}</td>
+                      <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">{lead.email_source || '—'}</td>
                       <td className="px-4 py-2.5">
-                        {lead.instagram_username ? (
+                        {lead.instagram_handle ? (
                           <a
-                            href={lead.instagram_url || `https://instagram.com/${lead.instagram_username}`}
+                            href={lead.instagram_url || `https://instagram.com/${lead.instagram_handle}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-emerald-400 hover:underline text-xs"
                           >
-                            @{lead.instagram_username}
+                            @{lead.instagram_handle}
                           </a>
                         ) : '—'}
                       </td>
                       <td className="px-4 py-2.5 text-gray-300">
-                        {lead.followers ? lead.followers.toLocaleString() : '—'}
+                        {lead.follower_count ? lead.follower_count.toLocaleString() : '—'}
                       </td>
-                      <td className="px-4 py-2.5 text-gray-300">
-                        {lead.engagement_rate ? `${lead.engagement_rate.toFixed(1)}%` : '—'}
+                      <td className="px-4 py-2.5">
+                        {lead.youtube_channel ? (
+                          <a href={lead.youtube_channel} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline text-xs">YT</a>
+                        ) : <span className="text-gray-600">—</span>}
                       </td>
                       <td className="px-4 py-2.5">
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[lead.status] || statusColors.new}`}>
@@ -293,7 +319,7 @@ export default function KnowledgePage() {
                         </span>
                       </td>
                       <td className="px-4 py-2.5 text-gray-500 text-xs">
-                        {new Date(lead.created_at).toLocaleDateString()}
+                        {lead.batch_date || '—'}
                       </td>
                     </tr>
                   ))

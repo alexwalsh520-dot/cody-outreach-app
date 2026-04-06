@@ -62,8 +62,8 @@ export default function AnalyticsPage() {
         leads.forEach((l) => {
           counts[l.status] = (counts[l.status] || 0) + 1
         })
-        const stageOrder = ['new', 'contacted', 'replied', 'booked', 'signed']
-        const stageFills = ['#10b981', '#059669', '#047857', '#065f46', '#064e3b']
+        const stageOrder = ['discovered', 'qualified', 'contacted', 'replied', 'booked', 'signed']
+        const stageFills = ['#6366f1', '#10b981', '#059669', '#047857', '#065f46', '#064e3b']
         setFunnelData(
           stageOrder.map((s, i) => ({
             name: s.charAt(0).toUpperCase() + s.slice(1),

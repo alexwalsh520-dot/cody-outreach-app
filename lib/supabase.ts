@@ -24,14 +24,24 @@ export type AgentEvent = {
 export type Lead = {
   id: string
   first_name: string | null
+  full_name: string | null
   email: string | null
-  instagram_username: string | null
+  email_source: string | null
+  instagram_handle: string | null
   instagram_url: string | null
-  followers: number | null
+  follower_count: number | null
   engagement_rate: number | null
-  status: 'new' | 'contacted' | 'replied' | 'booked' | 'signed' | 'dead'
+  status: string
   campaign_id: string | null
   notes: string | null
+  bio: string | null
+  business_category: string | null
+  youtube_channel: string | null
+  external_url: string | null
+  source: string | null
+  source_detail: string | null
+  batch_date: string | null
+  qualification_reasoning: string | null
   created_at: string
   last_contacted_at: string | null
 }
