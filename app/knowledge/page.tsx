@@ -73,12 +73,18 @@ const icpCriteria = [
 // ─── Status colors ────────────────────────────────────────────────────────────
 
 const statusColors: Record<string, string> = {
-  new:       'text-blue-400 bg-blue-400/10',
-  contacted: 'text-yellow-400 bg-yellow-400/10',
-  replied:   'text-purple-400 bg-purple-400/10',
-  booked:    'text-orange-400 bg-orange-400/10',
-  signed:    'text-emerald-400 bg-emerald-400/10',
-  dead:      'text-gray-500 bg-gray-500/10',
+  email_ready: 'text-emerald-400 bg-emerald-400/10',
+  mgmt_email:  'text-yellow-400 bg-yellow-400/10',
+  youtube_only:'text-cyan-400 bg-cyan-400/10',
+  no_contact:  'text-gray-500 bg-gray-500/10',
+  contacted:   'text-purple-400 bg-purple-400/10',
+  replied:     'text-orange-400 bg-orange-400/10',
+  booked:      'text-orange-400 bg-orange-400/10',
+  signed:      'text-emerald-400 bg-emerald-400/10',
+  new:         'text-blue-400 bg-blue-400/10',
+  discovered:  'text-blue-400 bg-blue-400/10',
+  qualified:   'text-emerald-400 bg-emerald-400/10',
+  dead:        'text-gray-500 bg-gray-500/10',
 }
 
 const categoryLabels: Record<string, string> = {
@@ -134,6 +140,16 @@ function MemoryCard({ memory }: { memory: Memory }) {
 
 type Tab = 'leads' | 'agents' | 'memories' | 'icp'
 
+type BatchGroup = {
+  key: string
+  date: string
+  seed: string
+  leads: Lead[]
+  emailCount: number
+  youtubeCount: number
+  mgmtCount: number
+}
+
 export default function KnowledgePage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [memories, setMemories] = useState<Memory[]>([])
@@ -142,17 +158,18 @@ export default function KnowledgePage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [activeTab, setActiveTab] = useState<Tab>('leads')
   const [memoriesLoading, setMemoriesLoading] = useState(false)
+  const [expandedBatch, setExpandedBatch] = useState<string | null>(null)
 
   useEffect(() => {
     supabase
       .from('leads')
       .select('*')
-      .order(sortField as string, { ascending: sortDir === 'asc' })
-      .limit(200)
+      .order('batch_date', { ascending: false })
+      .limit(500)
       .then(({ data }) => {
         if (data) setLeads(data as Lead[])
       })
-  }, [sortField, sortDir])
+  }, [])
 
   useEffect(() => {
     if (activeTab === 'memories' && memories.length === 0) {
@@ -183,6 +200,29 @@ export default function KnowledgePage() {
     if (sortField === field) setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
     else { setSortField(field); setSortDir('desc') }
   }
+
+  // Group leads into batches by date + seed
+  const batches: BatchGroup[] = (() => {
+    const groups: Record<string, Lead[]> = {}
+    filtered.forEach(l => {
+      const seed = (l.source_detail || '').replace('similar:', '') || 'manual'
+      const date = l.batch_date || 'unknown'
+      const key = `${date}__${seed}`
+      if (!groups[key]) groups[key] = []
+      groups[key].push(l)
+    })
+    return Object.entries(groups)
+      .map(([key, batchLeads]) => ({
+        key,
+        date: key.split('__')[0],
+        seed: key.split('__')[1],
+        leads: batchLeads,
+        emailCount: batchLeads.filter(l => l.email).length,
+        youtubeCount: batchLeads.filter(l => l.youtube_channel).length,
+        mgmtCount: batchLeads.filter(l => l.status === 'mgmt_email').length,
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date))
+  })()
 
   // Group memories by category
   const memoriesByCategory: Record<string, Memory[]> = {}
@@ -221,18 +261,19 @@ export default function KnowledgePage() {
         ))}
       </div>
 
-      {/* ── Lead Database ── */}
+      {/* ── Lead Database — Batch View ── */}
       {activeTab === 'leads' && (
-        <div className="bg-gray-800 rounded-xl border border-gray-700">
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-700">
+        <div className="space-y-3">
+          {/* Top bar */}
+          <div className="flex items-center gap-3">
             <input
               type="text"
               placeholder="Search leads..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
             />
-            <span className="text-xs text-gray-500">{filtered.length} leads</span>
+            <span className="text-xs text-gray-500">{filtered.length} leads in {batches.length} batches</span>
             <button
               onClick={() => {
                 const headers = ['first_name','full_name','email','email_source','instagram_handle','follower_count','youtube_channel','status','batch_date','bio','notes']
@@ -251,82 +292,122 @@ export default function KnowledgePage() {
                 a.click()
                 URL.revokeObjectURL(url)
               }}
-              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-colors"
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-colors shrink-0"
             >
-              Download CSV
+              Download All CSV
             </button>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-700">
-                  {[
-                    { key: 'first_name', label: 'Name' },
-                    { key: 'email', label: 'Email' },
-                    { key: 'email_source', label: 'Source' },
-                    { key: 'instagram_handle', label: 'Instagram' },
-                    { key: 'follower_count', label: 'Followers' },
-                    { key: 'youtube_channel', label: 'YouTube' },
-                    { key: 'status', label: 'Status' },
-                    { key: 'batch_date', label: 'Batch' },
-                  ].map((col) => (
-                    <th
-                      key={col.key}
-                      onClick={() => toggleSort(col.key as keyof Lead)}
-                      className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-300"
-                    >
-                      {col.label} {sortField === col.key ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center text-gray-500 text-sm">
-                      No leads yet. Scout will populate this table.
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((lead) => (
-                    <tr key={lead.id} className="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors">
-                      <td className="px-4 py-2.5 text-white font-medium">{lead.first_name || '—'}</td>
-                      <td className="px-4 py-2.5 text-gray-400 font-mono text-xs">{lead.email || <span className="text-gray-600">pending</span>}</td>
-                      <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">{lead.email_source || '—'}</td>
-                      <td className="px-4 py-2.5">
-                        {lead.instagram_handle ? (
-                          <a
-                            href={lead.instagram_url || `https://instagram.com/${lead.instagram_handle}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-emerald-400 hover:underline text-xs"
-                          >
-                            @{lead.instagram_handle}
-                          </a>
-                        ) : '—'}
-                      </td>
-                      <td className="px-4 py-2.5 text-gray-300">
-                        {lead.follower_count ? lead.follower_count.toLocaleString() : '—'}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        {lead.youtube_channel ? (
-                          <a href={lead.youtube_channel} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline text-xs">YT</a>
-                        ) : <span className="text-gray-600">—</span>}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[lead.status] || statusColors.new}`}>
-                          {lead.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2.5 text-gray-500 text-xs">
-                        {lead.batch_date || '—'}
-                      </td>
-                    </tr>
-                  ))
+
+          {batches.length === 0 ? (
+            <div className="bg-gray-800 rounded-xl border border-gray-700 px-4 py-12 text-center text-gray-500 text-sm">
+              No leads yet. Scout will populate this table.
+            </div>
+          ) : (
+            batches.map((batch) => (
+              <div key={batch.key} className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                {/* Batch header — clickable */}
+                <button
+                  onClick={() => setExpandedBatch(expandedBatch === batch.key ? null : batch.key)}
+                  className="w-full text-left px-4 py-3 flex items-center gap-4 hover:bg-gray-700/40 transition-colors"
+                >
+                  <span className="text-gray-500 text-sm">{expandedBatch === batch.key ? '▼' : '▶'}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-semibold text-sm">@{batch.seed}</span>
+                      <span className="text-gray-600 text-xs">{batch.date}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">{batch.leads.length} leads</p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    {batch.emailCount > 0 && (
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium text-emerald-400 bg-emerald-400/10">
+                        {batch.emailCount} emails
+                      </span>
+                    )}
+                    {batch.mgmtCount > 0 && (
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium text-yellow-400 bg-yellow-400/10">
+                        {batch.mgmtCount} mgmt
+                      </span>
+                    )}
+                    {batch.youtubeCount > 0 && (
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium text-cyan-400 bg-cyan-400/10">
+                        {batch.youtubeCount} YT
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const headers = ['first_name','email','email_source','instagram_handle','follower_count','youtube_channel','status']
+                      const csvRows = [headers.join(',')]
+                      batch.leads.forEach(l => {
+                        csvRows.push(headers.map(h => {
+                          const v = String((l as Record<string,unknown>)[h] ?? '')
+                          return v.includes(',') || v.includes('"') ? `"${v.replace(/"/g,'""')}"` : v
+                        }).join(','))
+                      })
+                      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `batch_${batch.seed}_${batch.date}.csv`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                    }}
+                    className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-gray-600 rounded transition-colors"
+                  >
+                    CSV
+                  </button>
+                </button>
+
+                {/* Expanded detail table */}
+                {expandedBatch === batch.key && (
+                  <div className="border-t border-gray-700 overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-700">
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instagram</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Followers</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">YouTube</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {batch.leads.map((lead) => (
+                          <tr key={lead.id} className="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors">
+                            <td className="px-4 py-2 text-white font-medium text-xs">{lead.first_name || '—'}</td>
+                            <td className="px-4 py-2 text-gray-400 font-mono text-xs">{lead.email || <span className="text-gray-600">—</span>}</td>
+                            <td className="px-4 py-2 text-gray-500 font-mono text-xs">{lead.email_source || '—'}</td>
+                            <td className="px-4 py-2">
+                              {lead.instagram_handle ? (
+                                <a href={`https://instagram.com/${lead.instagram_handle}`} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline text-xs">
+                                  @{lead.instagram_handle}
+                                </a>
+                              ) : '—'}
+                            </td>
+                            <td className="px-4 py-2 text-gray-300 text-xs">{lead.follower_count ? lead.follower_count.toLocaleString() : '—'}</td>
+                            <td className="px-4 py-2">
+                              {lead.youtube_channel ? (
+                                <a href={lead.youtube_channel} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline text-xs">YT</a>
+                              ) : <span className="text-gray-600">—</span>}
+                            </td>
+                            <td className="px-4 py-2">
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[lead.status] || statusColors.new}`}>
+                                {lead.status?.replace('_', ' ')}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 
