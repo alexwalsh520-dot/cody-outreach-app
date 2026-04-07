@@ -2,57 +2,101 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 :root {
-  --bg-primary: #06060a;
-  --bg-surface: #0a0a10;
-  --bg-elevated: #0f0f16;
-  --bg-glass: rgba(12, 12, 20, 0.7);
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --border-glass: rgba(255, 255, 255, 0.06);
-  --border-bright: rgba(255, 255, 255, 0.1);
+  --void: #050507;
+  --surface: #0a0a0e;
+  --elevated: #0e0e13;
   --gold: #c9a96e;
-  --gold-dim: rgba(201, 169, 110, 0.12);
+  --gold-soft: rgba(201, 169, 110, 0.08);
+  --gold-border: rgba(201, 169, 110, 0.15);
+  --gold-glow: 0 0 30px rgba(201, 169, 110, 0.06), 0 0 60px rgba(201, 169, 110, 0.03);
+  --line: rgba(255, 255, 255, 0.04);
+  --line-bright: rgba(255, 255, 255, 0.07);
 }
+
+* { font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11'; }
 
 body {
-  background-color: var(--bg-primary);
-  color: #e4e4e7;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--void);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+/* Scrollbar — nearly invisible */
+::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.1); }
 
-/* Glass card */
+/* Glass surfaces */
 .glass {
-  background: var(--bg-glass);
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  border: 1px solid var(--border-glass);
+  background: rgba(10, 10, 14, 0.6);
+  backdrop-filter: blur(40px) saturate(1.2);
+  -webkit-backdrop-filter: blur(40px) saturate(1.2);
+  border: 1px solid var(--line);
+  transition: border-color 0.3s ease;
+}
+.glass:hover { border-color: var(--line-bright); }
+
+/* Gold glass — for accent cards */
+.glass-gold {
+  background: rgba(10, 10, 14, 0.6);
+  backdrop-filter: blur(40px) saturate(1.2);
+  -webkit-backdrop-filter: blur(40px) saturate(1.2);
+  border: 1px solid var(--gold-border);
+  box-shadow: var(--gold-glow);
 }
 
-.glass-elevated {
-  background: rgba(16, 16, 24, 0.8);
-  backdrop-filter: blur(32px) saturate(1.5);
-  -webkit-backdrop-filter: blur(32px) saturate(1.5);
-  border: 1px solid var(--border-bright);
+/* Subtle noise texture overlay */
+.noise::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px;
 }
 
-/* Glow effects */
-.glow-gold {
-  box-shadow: 0 0 20px rgba(201, 169, 110, 0.08), 0 0 40px rgba(201, 169, 110, 0.04);
+/* Status pulse */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
+.live-dot { animation: livePulse 2s ease-in-out infinite; }
 
-.glow-green {
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.08), 0 0 40px rgba(34, 197, 94, 0.04);
-}
-
-/* Recharts tooltip dark theme */
+/* Recharts */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background-color: var(--bg-elevated) !important;
-  border-color: var(--border-glass) !important;
+  background: var(--elevated) !important;
+  border-color: var(--line) !important;
   border-radius: 8px !important;
+}
+
+/* Bar fill animation */
+@keyframes barGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.bar-animated {
+  transform-origin: left;
+  animation: barGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger children */
+.stagger > * { opacity: 0; animation: fadeUp 0.4s ease forwards; }
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

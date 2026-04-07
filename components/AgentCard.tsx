@@ -1,4 +1,9 @@
 import clsx from 'clsx'
+import { type LucideIcon, Search, Crosshair, PenTool, TrendingUp, Brain } from 'lucide-react'
+
+const agentIcons: Record<string, LucideIcon> = {
+  scout: Search, mason: Crosshair, writer: PenTool, tracker: TrendingUp, cody: Brain,
+}
 
 interface AgentCardProps {
   name: string
@@ -10,53 +15,45 @@ interface AgentCardProps {
   nextTask?: string
 }
 
-export default function AgentCard({
-  name,
-  emoji,
-  role,
-  status,
-  lastAction,
-  lastActionTime,
-  nextTask,
-}: AgentCardProps) {
-  const statusConfig = {
-    active: { label: 'Active', dot: 'bg-emerald-500 animate-pulse', text: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-    idle: { label: 'Idle', dot: 'bg-gray-600', text: 'text-gray-500', bg: 'bg-gray-800 border-gray-700' },
-    error: { label: 'Error', dot: 'bg-red-500 animate-pulse', text: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' },
-  }
-
-  const cfg = statusConfig[status]
+export default function AgentCard({ name, emoji, role, status, lastAction, lastActionTime, nextTask }: AgentCardProps) {
+  const Icon = agentIcons[name.toLowerCase()] || Brain
 
   return (
-    <div className={clsx('rounded-xl p-4 border', cfg.bg)}>
+    <div className={clsx(
+      'rounded-xl p-4 transition-all duration-300',
+      status === 'active' ? 'glass-gold' : 'glass',
+      status === 'error' && 'border-red-500/20'
+    )}>
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">{emoji}</span>
+        <div className="flex items-center gap-2.5">
+          <Icon className={clsx(
+            'w-4 h-4',
+            status === 'active' ? 'text-[#c9a96e]/50' : 'text-white/15'
+          )} strokeWidth={1.5} />
           <div>
-            <p className="font-semibold text-white text-sm">{name}</p>
-            <p className="text-xs text-gray-500">{role}</p>
+            <p className="text-[12px] font-semibold text-white/70">{name}</p>
+            <p className="text-[10px] text-white/20">{role}</p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className={clsx('w-2 h-2 rounded-full', cfg.dot)} />
-          <span className={clsx('text-xs font-medium', cfg.text)}>{cfg.label}</span>
-        </div>
+        <span className={clsx(
+          'w-1.5 h-1.5 rounded-full mt-1',
+          status === 'active' && 'bg-[#c9a96e]/60 live-dot',
+          status === 'idle' && 'bg-white/8',
+          status === 'error' && 'bg-red-400/60 live-dot'
+        )} />
       </div>
 
       {lastAction && (
         <div className="mb-2">
-          <p className="text-xs text-gray-500 mb-0.5">Last action</p>
-          <p className="text-xs text-gray-300 leading-snug">{lastAction}</p>
-          {lastActionTime && (
-            <p className="text-xs text-gray-600 mt-0.5">{lastActionTime}</p>
-          )}
+          <p className="text-[10px] text-white/30 leading-relaxed line-clamp-2">{lastAction}</p>
+          {lastActionTime && <p className="text-[9px] text-white/10 mt-0.5">{lastActionTime}</p>}
         </div>
       )}
 
       {nextTask && (
-        <div className="mt-2 pt-2 border-t border-gray-700/50">
-          <p className="text-xs text-gray-500 mb-0.5">Next task</p>
-          <p className="text-xs text-gray-400">{nextTask}</p>
+        <div className="mt-2 pt-2 border-t border-white/[0.03]">
+          <p className="text-[9px] text-white/10 uppercase tracking-wider mb-0.5">Next</p>
+          <p className="text-[10px] text-white/20">{nextTask}</p>
         </div>
       )}
     </div>

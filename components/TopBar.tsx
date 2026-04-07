@@ -2,22 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Activity, Zap } from 'lucide-react'
+import { Zap } from 'lucide-react'
 
 export default function TopBar() {
-  const [time, setTime] = useState('')
   const [leadCount, setLeadCount] = useState<number | null>(null)
   const [emailCount, setEmailCount] = useState<number | null>(null)
 
   useEffect(() => {
-    const tick = () => {
-      const now = new Date()
-      setTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }))
-    }
-    tick()
-    const interval = setInterval(tick, 60000)
-
-    // Quick stats
     const fetchStats = async () => {
       const { count: leads } = await supabase.from('leads').select('*', { count: 'exact', head: true })
       const { count: emails } = await supabase.from('leads').select('*', { count: 'exact', head: true }).not('email', 'is', null)
@@ -25,37 +16,33 @@ export default function TopBar() {
       setEmailCount(emails || 0)
     }
     fetchStats()
-
-    return () => clearInterval(interval)
   }, [])
 
   return (
-    <header className="h-11 bg-[#08080e] border-b border-white/[0.04] px-5 flex items-center justify-between shrink-0">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <Zap className="w-3.5 h-3.5 text-gold" strokeWidth={2.5} />
-          <span className="text-[13px] font-semibold tracking-wide text-white/90">Scout</span>
-        </div>
-        <span className="w-px h-3 bg-white/[0.06]" />
-        <span className="text-[11px] text-white/30 font-medium tracking-wide">Lead Engine</span>
+    <header className="h-10 bg-[#050507] border-b border-white/[0.03] px-5 flex items-center justify-between shrink-0 relative z-10">
+      <div className="flex items-center gap-2.5">
+        <Zap className="w-3 h-3 text-[#c9a96e]" strokeWidth={2.5} fill="currentColor" />
+        <span className="text-[12px] font-semibold tracking-[0.04em] text-white/80">Scout</span>
+        <span className="w-px h-2.5 bg-white/[0.06]" />
+        <span className="text-[10px] text-white/20 font-medium tracking-[0.06em] uppercase">Lead Engine</span>
       </div>
 
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-6">
         {leadCount !== null && (
-          <div className="flex items-center gap-4">
+          <>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-white/25 font-medium">Leads</span>
-              <span className="text-[11px] font-semibold text-white/70 tabular-nums">{leadCount}</span>
+              <span className="text-[10px] text-white/15 uppercase tracking-wider font-medium">Leads</span>
+              <span className="text-[11px] font-semibold text-white/50 font-mono tabular-nums">{leadCount}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-white/25 font-medium">Emails</span>
-              <span className="text-[11px] font-semibold text-emerald-400/80 tabular-nums">{emailCount}</span>
+              <span className="text-[10px] text-white/15 uppercase tracking-wider font-medium">Emails</span>
+              <span className="text-[11px] font-semibold text-[#c9a96e]/70 font-mono tabular-nums">{emailCount}</span>
             </div>
-          </div>
+          </>
         )}
         <div className="flex items-center gap-1.5">
-          <Activity className="w-3 h-3 text-emerald-500/60" />
-          <span className="text-[11px] text-white/20 font-mono tabular-nums">{time}</span>
+          <span className="w-1 h-1 rounded-full bg-emerald-500/50 live-dot" />
+          <span className="text-[10px] text-white/15 font-medium">Online</span>
         </div>
       </div>
     </header>
