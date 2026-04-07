@@ -2,66 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --void: #050507;
-  --surface: #0a0a0e;
-  --elevated: #0e0e13;
-  --gold: #c9a96e;
-  --gold-soft: rgba(201, 169, 110, 0.08);
-  --gold-border: rgba(201, 169, 110, 0.15);
-  --gold-glow: 0 0 30px rgba(201, 169, 110, 0.06), 0 0 60px rgba(201, 169, 110, 0.03);
-  --line: rgba(255, 255, 255, 0.04);
-  --line-bright: rgba(255, 255, 255, 0.07);
-}
+  /*
+   * Surface system — 5 distinct levels with VISIBLE contrast.
+   * Each level is ~6-8 lightness steps apart.
+   */
+  --bg: #0c0c10;        /* page background */
+  --sidebar: #101014;    /* sidebar, slightly lifted */
+  --card: #161619;       /* card surfaces — clearly visible against bg */
+  --card-hover: #1c1c20; /* card hover state */
+  --elevated: #222228;   /* modals, dropdowns, popovers */
 
-* { font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11'; }
+  /* Borders — visible but not harsh */
+  --border: rgba(255, 255, 255, 0.07);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  /* Text — readable hierarchy */
+  --text-primary: rgba(255, 255, 255, 0.88);
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-tertiary: rgba(255, 255, 255, 0.32);
+  --text-faint: rgba(255, 255, 255, 0.18);
+
+  /* Gold system */
+  --gold: #c9a96e;
+  --gold-text: #d4b87d;
+  --gold-muted: rgba(201, 169, 110, 0.55);
+  --gold-bg: rgba(201, 169, 110, 0.08);
+  --gold-border: rgba(201, 169, 110, 0.18);
+  --gold-glow: 0 0 24px rgba(201, 169, 110, 0.06);
+
+  /* Status */
+  --green: #34d399;
+  --green-bg: rgba(52, 211, 153, 0.08);
+  --green-border: rgba(52, 211, 153, 0.15);
+  --cyan: #22d3ee;
+  --cyan-bg: rgba(34, 211, 238, 0.07);
+  --cyan-border: rgba(34, 211, 238, 0.14);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251, 191, 36, 0.07);
+}
 
 body {
-  background: var(--void);
-  color: rgba(255, 255, 255, 0.7);
-  font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar — nearly invisible */
-::-webkit-scrollbar { width: 3px; height: 3px; }
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.1); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
 
-/* Glass surfaces */
-.glass {
-  background: rgba(10, 10, 14, 0.6);
-  backdrop-filter: blur(40px) saturate(1.2);
-  -webkit-backdrop-filter: blur(40px) saturate(1.2);
-  border: 1px solid var(--line);
-  transition: border-color 0.3s ease;
+/* ─── Card system ─── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
 }
-.glass:hover { border-color: var(--line-bright); }
+.card:hover {
+  background: var(--card-hover);
+  border-color: var(--border-hover);
+}
 
-/* Gold glass — for accent cards */
-.glass-gold {
-  background: rgba(10, 10, 14, 0.6);
-  backdrop-filter: blur(40px) saturate(1.2);
-  -webkit-backdrop-filter: blur(40px) saturate(1.2);
+/* Gold-accent card */
+.card-gold {
+  background: var(--card);
   border: 1px solid var(--gold-border);
+  border-radius: 12px;
   box-shadow: var(--gold-glow);
+  transition: all 0.2s ease;
 }
-
-/* Subtle noise texture overlay */
-.noise::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0.015;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px;
+.card-gold:hover {
+  border-color: rgba(201, 169, 110, 0.28);
 }
 
 /* Status pulse */
@@ -71,32 +89,26 @@ body {
 }
 .live-dot { animation: livePulse 2s ease-in-out infinite; }
 
-/* Recharts */
-.recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: var(--elevated) !important;
-  border-color: var(--line) !important;
-  border-radius: 8px !important;
-}
-
-/* Bar fill animation */
+/* Bar animation */
 @keyframes barGrow {
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
 }
 .bar-animated {
   transform-origin: left;
-  animation: barGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: barGrow 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Stagger children */
-.stagger > * { opacity: 0; animation: fadeUp 0.4s ease forwards; }
+/* Staggered entrance */
+.stagger > * { opacity: 0; animation: fadeUp 0.35s ease forwards; }
 .stagger > *:nth-child(1) { animation-delay: 0ms; }
-.stagger > *:nth-child(2) { animation-delay: 60ms; }
-.stagger > *:nth-child(3) { animation-delay: 120ms; }
-.stagger > *:nth-child(4) { animation-delay: 180ms; }
-.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(2) { animation-delay: 50ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms; }
+.stagger > *:nth-child(4) { animation-delay: 150ms; }
+.stagger > *:nth-child(5) { animation-delay: 200ms; }
+.stagger > *:nth-child(6) { animation-delay: 250ms; }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }

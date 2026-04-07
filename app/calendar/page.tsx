@@ -123,7 +123,7 @@ export default function CalendarPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-white">Calendar</h1>
-        <p className="text-sm text-gray-500 mt-0.5">7-day schedule — click a job to see recent runs</p>
+        <p className="text-sm text-white/30 mt-0.5">7-day schedule — click a job to see recent runs</p>
       </div>
 
       {/* Legend */}
@@ -131,17 +131,17 @@ export default function CalendarPage() {
         {Object.entries(agentConfig).map(([agent, cfg]) => (
           <div key={agent} className="flex items-center gap-1.5">
             <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
-            <span className="text-xs text-gray-400 capitalize">{agent}</span>
+            <span className="text-xs text-white/45 capitalize">{agent}</span>
           </div>
         ))}
       </div>
 
       {loading ? (
-        <div className="text-sm text-gray-500 py-8 text-center">Loading schedule...</div>
+        <div className="text-sm text-white/30 py-8 text-center">Loading schedule...</div>
       ) : jobs.length === 0 ? (
-        <div className="bg-gray-800 rounded-xl p-8 border border-gray-700 text-center">
-          <p className="text-gray-500 text-sm">No cron jobs registered yet.</p>
-          <p className="text-gray-600 text-xs mt-1">Agents log their jobs to the cron_jobs table at startup.</p>
+        <div className="bg-[#161619] rounded-xl p-8 border border-white/[0.06] text-center">
+          <p className="text-white/30 text-sm">No cron jobs registered yet.</p>
+          <p className="text-white/20 text-xs mt-1">Agents log their jobs to the cron_jobs table at startup.</p>
         </div>
       ) : (
         <div className="grid grid-cols-7 gap-2">
@@ -149,13 +149,13 @@ export default function CalendarPage() {
             <div key={day} className="min-w-0">
               {/* Day header */}
               <div className="text-center mb-2">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{day}</span>
+                <span className="text-xs font-semibold text-white/45 uppercase tracking-wider">{day}</span>
               </div>
 
               {/* Jobs for this day */}
               <div className="space-y-1.5">
                 {grid[dayIdx].length === 0 ? (
-                  <div className="h-8 rounded-lg bg-gray-800/40 border border-gray-700/30" />
+                  <div className="h-8 rounded-lg bg-[#161619]/40 border border-white/[0.06]/30" />
                 ) : (
                   grid[dayIdx].map((job) => {
                     const cfg = agentConfig[job.agent] || agentConfig.cody
@@ -172,7 +172,7 @@ export default function CalendarPage() {
                           <p className="opacity-60 text-[10px] truncate">{humanSchedule(job.schedule)}</p>
                           {job.last_status && (
                             <span className={`text-[10px] font-medium ${
-                              job.last_status === 'success' ? 'text-emerald-400' : 'text-red-400'
+                              job.last_status === 'success' ? 'text-[#c9a96e]' : 'text-red-400'
                             }`}>
                               {job.last_status === 'success' ? '✓' : '✗'}
                             </span>
@@ -184,21 +184,21 @@ export default function CalendarPage() {
                           <div className={`mt-1 rounded-lg border p-2 text-xs ${cfg.bg} ${cfg.border}`}>
                             <p className={`font-semibold mb-2 ${cfg.text}`}>Last runs</p>
                             {!runResults[job.id] ? (
-                              <p className="text-gray-500">Loading...</p>
+                              <p className="text-white/30">Loading...</p>
                             ) : runResults[job.id].length === 0 ? (
-                              <p className="text-gray-500">No runs logged yet.</p>
+                              <p className="text-white/30">No runs logged yet.</p>
                             ) : (
                               <div className="space-y-1">
                                 {runResults[job.id].map((run) => (
                                   <div key={run.id} className="flex items-center gap-1">
-                                    <span className={run.status === 'error' ? 'text-red-400' : 'text-emerald-400'}>
+                                    <span className={run.status === 'error' ? 'text-red-400' : 'text-[#c9a96e]'}>
                                       {run.status === 'error' ? '✗' : '✓'}
                                     </span>
-                                    <span className="text-gray-400 text-[10px]">
+                                    <span className="text-white/45 text-[10px]">
                                       {formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}
                                     </span>
                                     {run.duration_ms && (
-                                      <span className="text-gray-600 text-[10px]">{run.duration_ms}ms</span>
+                                      <span className="text-white/20 text-[10px]">{run.duration_ms}ms</span>
                                     )}
                                   </div>
                                 ))}
@@ -218,8 +218,8 @@ export default function CalendarPage() {
 
       {/* Job list below grid for detail */}
       {jobs.length > 0 && (
-        <div className="bg-gray-800 rounded-xl border border-gray-700">
-          <div className="px-4 py-3 border-b border-gray-700">
+        <div className="bg-[#161619] rounded-xl border border-white/[0.06]">
+          <div className="px-4 py-3 border-b border-white/[0.06]">
             <p className="text-sm font-semibold text-white">All Jobs ({jobs.length})</p>
           </div>
           <div className="divide-y divide-gray-700/50">
@@ -230,13 +230,13 @@ export default function CalendarPage() {
                   <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white font-medium">{job.name}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 font-mono">{job.schedule} — {humanSchedule(job.schedule)}</p>
+                    <p className="text-xs text-white/30 mt-0.5 font-mono">{job.schedule} — {humanSchedule(job.schedule)}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs text-gray-500">{job.run_count} runs</p>
+                    <p className="text-xs text-white/30">{job.run_count} runs</p>
                     {job.last_status && (
                       <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                        job.last_status === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                        job.last_status === 'success' ? 'bg-emerald-500/20 text-[#c9a96e]' : 'bg-red-500/10 text-red-400/70'
                       }`}>
                         {job.last_status}
                       </span>

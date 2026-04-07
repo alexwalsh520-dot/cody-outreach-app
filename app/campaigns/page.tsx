@@ -20,7 +20,7 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
   const closeRate = campaign.booked_calls > 0 ? Math.round((campaign.signed_clients / campaign.booked_calls) * 100) : 0
 
   return (
-    <div className="glass rounded-xl overflow-hidden">
+    <div className="card rounded-xl overflow-hidden">
       {/* Header */}
       <div className="px-5 py-4 border-b border-white/[0.03] flex items-start justify-between">
         <div className="flex-1 min-w-0 pr-3">
@@ -117,28 +117,28 @@ export default function CampaignsPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-4 gap-3 stagger">
-        <div className="glass rounded-xl p-4 flex items-center gap-3">
+        <div className="card rounded-xl p-4 flex items-center gap-3">
           <Mail className="w-4 h-4 text-white/10" strokeWidth={1.5} />
           <div>
             <p className="text-[20px] font-bold text-white/70 tabular-nums font-mono">{totalSent.toLocaleString()}</p>
             <p className="text-[9px] text-white/15 uppercase tracking-wider">Emails sent</p>
           </div>
         </div>
-        <div className="glass rounded-xl p-4 flex items-center gap-3">
+        <div className="card rounded-xl p-4 flex items-center gap-3">
           <MessageSquare className="w-4 h-4 text-white/10" strokeWidth={1.5} />
           <div>
             <p className="text-[20px] font-bold text-white/70 tabular-nums font-mono">{totalReplies}</p>
             <p className="text-[9px] text-white/15 uppercase tracking-wider">Replies</p>
           </div>
         </div>
-        <div className="glass rounded-xl p-4 flex items-center gap-3">
+        <div className="card rounded-xl p-4 flex items-center gap-3">
           <Phone className="w-4 h-4 text-white/10" strokeWidth={1.5} />
           <div>
             <p className="text-[20px] font-bold text-white/70 tabular-nums font-mono">{totalBooked}</p>
             <p className="text-[9px] text-white/15 uppercase tracking-wider">Calls booked</p>
           </div>
         </div>
-        <div className="glass-gold rounded-xl p-4 flex items-center gap-3">
+        <div className="card-gold rounded-xl p-4 flex items-center gap-3">
           <UserPlus className="w-4 h-4 text-[#c9a96e]/30" strokeWidth={1.5} />
           <div>
             <p className="text-[20px] font-bold text-[#c9a96e] tabular-nums font-mono">{totalSigned}</p>
@@ -151,7 +151,7 @@ export default function CampaignsPage() {
       {loading ? (
         <div className="text-[11px] text-white/15 py-12 text-center">Loading campaigns...</div>
       ) : campaigns.length === 0 ? (
-        <div className="glass rounded-xl p-16 text-center">
+        <div className="card rounded-xl p-16 text-center">
           <Send className="w-6 h-6 text-white/10 mx-auto mb-3" strokeWidth={1.2} />
           <p className="text-[12px] text-white/25">No campaigns yet</p>
           <p className="text-[10px] text-white/10 mt-1">Sync from Smartlead or Writer will create them</p>

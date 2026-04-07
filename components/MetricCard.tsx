@@ -19,32 +19,34 @@ export default function MetricCard({
 
   return (
     <div className={clsx(
-      'rounded-xl p-5 transition-all duration-300',
-      isGold ? 'glass-gold' : 'glass',
+      'rounded-xl p-5 transition-all duration-200',
+      isGold ? 'card-gold' : 'card',
       className
     )}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.12em]">{label}</p>
-        {Icon && <Icon className={clsx('w-[14px] h-[14px]', isGold ? 'text-[#c9a96e]/30' : 'text-white/8')} strokeWidth={1.5} />}
+        <p className="text-[11px] font-medium text-white/30 uppercase tracking-[0.08em]">{label}</p>
+        {Icon && (
+          <Icon className={clsx('w-4 h-4', isGold ? 'text-[#c9a96e]/25' : 'text-white/10')} strokeWidth={1.5} />
+        )}
       </div>
       <p className={clsx(
-        'text-[26px] font-bold tracking-tight leading-none',
+        'text-[28px] font-bold tracking-tight leading-none',
         accent === 'gold' && 'text-[#c9a96e]',
-        accent === 'green' && 'text-emerald-400/90',
-        accent === 'cyan' && 'text-cyan-400/80',
+        accent === 'green' && 'text-emerald-400',
+        accent === 'cyan' && 'text-cyan-400/90',
         accent === 'default' && 'text-white/85'
       )}>
         {value}
       </p>
       {(sub || (trend && trendValue)) && (
         <div className="flex items-center gap-2 mt-2">
-          {sub && <p className="text-[10px] text-white/15">{sub}</p>}
+          {sub && <p className="text-[11px] text-white/25">{sub}</p>}
           {trend && trendValue && (
             <span className={clsx(
-              'text-[10px] font-medium font-mono',
-              trend === 'up' && 'text-emerald-400/60',
-              trend === 'down' && 'text-red-400/60',
-              trend === 'neutral' && 'text-white/15'
+              'text-[11px] font-medium font-mono',
+              trend === 'up' && 'text-emerald-400/70',
+              trend === 'down' && 'text-red-400/70',
+              trend === 'neutral' && 'text-white/20'
             )}>
               {trend === 'up' ? '+' : trend === 'down' ? '-' : ''}{trendValue}
             </span>

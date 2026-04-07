@@ -59,7 +59,7 @@ function buildAgentStates(events: AgentEvent[]): AgentState[] {
 }
 
 const agentColors: Record<string, string> = {
-  cody: 'text-emerald-400',
+  cody: 'text-[#c9a96e]',
   scout: 'text-blue-400',
   writer: 'text-purple-400',
   tracker: 'text-orange-400',
@@ -129,13 +129,13 @@ export default function OfficePage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-white">Office</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Live agent status and activity feed</p>
+          <p className="text-sm text-white/30 mt-0.5">Live agent status and activity feed</p>
         </div>
         <div className="flex items-center gap-3">
           {activeCount > 0 && (
             <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-medium text-emerald-400">{activeCount} active</span>
+              <span className="text-xs font-medium text-[#c9a96e]">{activeCount} active</span>
             </div>
           )}
           {errorCount > 0 && (
@@ -144,7 +144,7 @@ export default function OfficePage() {
               <span className="text-xs font-medium text-red-400">{errorCount} error</span>
             </div>
           )}
-          <span className="text-xs text-gray-600">{totalEvents.toLocaleString()} total events</span>
+          <span className="text-xs text-white/20">{totalEvents.toLocaleString()} total events</span>
         </div>
       </div>
 
@@ -165,36 +165,36 @@ export default function OfficePage() {
       </div>
 
       {/* Live feed */}
-      <div className="bg-gray-800 rounded-xl border border-gray-700">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+      <div className="bg-[#161619] rounded-xl border border-white/[0.06]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
           <p className="text-sm font-semibold text-white">Live Activity Feed</p>
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs text-gray-500">Real-time</span>
+            <span className="text-xs text-white/30">Real-time</span>
           </div>
         </div>
         {feedEvents.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-gray-500 text-sm">No activity yet.</p>
-            <p className="text-gray-600 text-xs mt-1">Agent events will appear here in real-time as they run.</p>
+            <p className="text-white/30 text-sm">No activity yet.</p>
+            <p className="text-white/20 text-xs mt-1">Agent events will appear here in real-time as they run.</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-700/50">
             {feedEvents.map((event) => (
               <div key={event.id} className="px-4 py-3 flex items-start gap-3">
-                <span className={`text-xs font-medium mt-0.5 capitalize shrink-0 w-16 ${agentColors[event.agent] || 'text-gray-400'}`}>
+                <span className={`text-xs font-medium mt-0.5 capitalize shrink-0 w-16 ${agentColors[event.agent] || 'text-white/45'}`}>
                   {event.agent}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-300">{event.event}</p>
-                  <p className="text-xs text-gray-600 mt-0.5">
+                  <p className="text-sm text-white/60">{event.event}</p>
+                  <p className="text-xs text-white/20 mt-0.5">
                     {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
                   </p>
                 </div>
                 <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
-                  event.status === 'error' ? 'bg-red-500/20 text-red-400'
-                  : event.status === 'warning' ? 'bg-yellow-500/20 text-yellow-400'
-                  : 'bg-emerald-500/20 text-emerald-400'
+                  event.status === 'error' ? 'bg-red-500/10 text-red-400/70'
+                  : event.status === 'warning' ? 'bg-amber-500/10 text-amber-400/70'
+                  : 'bg-emerald-500/20 text-[#c9a96e]'
                 }`}>
                   {event.status}
                 </span>
