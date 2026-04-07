@@ -26,6 +26,23 @@ type ActivityEvent = {
   created_at: string
 }
 
+type PipelineRun = {
+  seed: string
+  discovered: number
+  in_range: number
+  qualified: number
+  emails_found: number
+  youtube_channels: number
+  created_at: string
+}
+
+type FunnelTotals = {
+  discovered: number
+  inRange: number
+  qualified: number
+  emailsFound: number
+}
+
 type AgentDef = { id: string; name: string; icon: LucideIcon; role: string; desc: string; active: boolean }
 
 const agentDefs: AgentDef[] = [
@@ -54,6 +71,7 @@ const sourceNames: Record<string, string> = {
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null)
+  const [funnel, setFunnel] = useState<FunnelTotals | null>(null)
   const [activity, setActivity] = useState<ActivityEvent[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -92,6 +110,20 @@ export default function DashboardPage() {
         .order('created_at', { ascending: false })
         .limit(8)
       if (events) setActivity(events as ActivityEvent[])
+
+      // Pipeline funnel totals
+      const { data: runs } = await supabase
+        .from('pipeline_runs')
+        .select('discovered, in_range, qualified, emails_found')
+      if (runs && runs.length > 0) {
+        setFunnel({
+          discovered: runs.reduce((s, r) => s + (r.discovered || 0), 0),
+          inRange: runs.reduce((s, r) => s + (r.in_range || 0), 0),
+          qualified: runs.reduce((s, r) => s + (r.qualified || 0), 0),
+          emailsFound: runs.reduce((s, r) => s + (r.emails_found || 0), 0),
+        })
+      }
+
       setLoading(false)
     }
     load()
@@ -136,6 +168,59 @@ export default function DashboardPage() {
           <p className="text-[11px] text-white/20 mt-2">{stats ? `${stats.totalLeads + stats.mgmtEmails} of ${stats.totalScraped} profiles` : ''}</p>
         </div>
       </div>
+
+      {/* ─── Pipeline Funnel ─── */}
+      {funnel && funnel.discovered > 0 && (
+        <div className="card rounded-xl p-5">
+          <p className="text-[11px] font-semibold text-white/35 uppercase tracking-[0.1em] mb-5">Pipeline Funnel</p>
+          <div className="flex items-center gap-0">
+            {[
+              { label: 'Discovered', value: funnel.discovered, color: '#6366f1' },
+              { label: 'In Range', value: funnel.inRange, color: '#8b5cf6' },
+              { label: 'Qualified', value: funnel.qualified, color: '#22d3ee' },
+              { label: 'Emails Found', value: funnel.emailsFound, color: '#c9a96e' },
+            ].map((step, i, arr) => {
+              const pct = funnel.discovered > 0 ? Math.round((step.value / funnel.discovered) * 100) : 0
+              const widthPct = funnel.discovered > 0 ? Math.max((step.value / funnel.discovered) * 100, 15) : 25
+              return (
+                <div key={step.label} className="flex-1 flex flex-col items-center relative">
+                  {/* Bar */}
+                  <div
+                    className="rounded-md mx-auto bar-animated"
+                    style={{
+                      width: `${widthPct}%`,
+                      minWidth: '48px',
+                      height: '48px',
+                      background: step.color,
+                      opacity: 0.2,
+                      animationDelay: `${i * 150}ms`,
+                    }}
+                  />
+                  {/* Value overlay */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-[20px] font-bold text-white/80 tabular-nums font-mono">{step.value}</span>
+                  </div>
+                  {/* Label + conversion */}
+                  <div className="mt-3 text-center">
+                    <p className="text-[11px] text-white/40">{step.label}</p>
+                    {i > 0 && (
+                      <p className="text-[10px] text-white/20 font-mono mt-0.5">
+                        {Math.round((step.value / arr[i-1].value) * 100)}% of prev
+                      </p>
+                    )}
+                  </div>
+                  {/* Arrow between steps */}
+                  {i < arr.length - 1 && (
+                    <div className="absolute right-0 top-[22px] translate-x-1/2 z-10">
+                      <span className="text-white/10 text-[14px]">&rarr;</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* ─── Email Sources ─── */}
