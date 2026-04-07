@@ -186,7 +186,11 @@ export default function KnowledgePage() {
     }
   }, [activeTab])
 
-  const filtered = leads.filter((l) => {
+  // Split leads: ones with emails are "leads", ones without are "pending"
+  const leadsWithEmail = leads.filter(l => l.email)
+  const pendingLeads = leads.filter(l => !l.email && l.youtube_channel)
+
+  const filtered = leadsWithEmail.filter((l) => {
     const q = search.toLowerCase()
     return (
       !q ||
@@ -242,8 +246,8 @@ export default function KnowledgePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-white">Knowledge Base</h1>
-        <p className="text-sm text-white/30 mt-0.5">Agent docs, ICP criteria, lead database, and Cody's memories</p>
+        <h1 className="text-[16px] font-semibold text-white/85">Lead Database</h1>
+        <p className="text-[12px] text-white/30 mt-1">{leadsWithEmail.length} leads with emails &middot; {pendingLeads.length} pending YouTube scraper</p>
       </div>
 
       {/* Tabs */}
@@ -273,7 +277,7 @@ export default function KnowledgePage() {
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1 bg-[#161619] border border-white/[0.06] rounded-lg px-3 py-1.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#c9a96e]/40"
             />
-            <span className="text-xs text-white/30">{filtered.length} leads in {batches.length} batches</span>
+            <span className="text-[11px] text-white/30">{filtered.length} leads</span>
             <button
               onClick={() => {
                 const headers = ['first_name','full_name','email','email_source','instagram_handle','follower_count','youtube_channel','status','batch_date','bio','notes']

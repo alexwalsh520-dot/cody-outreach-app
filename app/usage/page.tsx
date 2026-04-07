@@ -5,10 +5,11 @@ import { supabase, UsageEvent } from '@/lib/supabase'
 import MetricCard from '@/components/MetricCard'
 
 const serviceColors: Record<string, string> = {
-  openrouter: '#10b981',
+  anthropic: '#c9a96e',
   apify: '#3b82f6',
-  millionverifier: '#8b5cf6',
+  dataovercoffee: '#f472b6',
   smartlead: '#f59e0b',
+  pipeline_run: '#22d3ee',
 }
 
 const agentColors: Record<string, string> = {
@@ -93,9 +94,9 @@ export default function UsagePage() {
             <MetricCard label="Today's Spend" value={`$${todaySpend.toFixed(2)}`} sub="all agents" accent="gold" />
             <MetricCard label="Running Total" value={`$${totalSpend.toFixed(2)}`} sub="all time" />
             <MetricCard
-              label="OpenRouter"
-              value={`$${(byService['openrouter'] || 0).toFixed(2)}`}
-              sub="LLM tokens"
+              label="Anthropic (Haiku)"
+              value={`$${(byService['anthropic'] || byService['pipeline_run'] || 0).toFixed(2)}`}
+              sub="qualification + validation"
             />
             <MetricCard
               label="Apify"
