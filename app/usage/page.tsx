@@ -90,7 +90,7 @@ export default function UsagePage() {
         <>
           {/* Top metrics */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard label="Today's Spend" value={`$${todaySpend.toFixed(2)}`} sub="all agents" accent />
+            <MetricCard label="Today's Spend" value={`$${todaySpend.toFixed(2)}`} sub="all agents" accent="gold" />
             <MetricCard label="Running Total" value={`$${totalSpend.toFixed(2)}`} sub="all time" />
             <MetricCard
               label="OpenRouter"
