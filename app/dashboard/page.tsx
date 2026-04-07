@@ -173,48 +173,32 @@ export default function DashboardPage() {
       {funnel && funnel.discovered > 0 && (
         <div className="card rounded-xl p-5">
           <p className="text-[11px] font-semibold text-white/35 uppercase tracking-[0.1em] mb-5">Pipeline Funnel</p>
-          <div className="flex items-center gap-0">
+          <div className="space-y-3">
             {[
               { label: 'Discovered', value: funnel.discovered, color: '#6366f1' },
-              { label: 'In Range', value: funnel.inRange, color: '#8b5cf6' },
-              { label: 'Qualified', value: funnel.qualified, color: '#22d3ee' },
+              { label: 'In Range (100K-2M)', value: funnel.inRange, color: '#8b5cf6' },
+              { label: 'Qualified (Haiku)', value: funnel.qualified, color: '#22d3ee' },
               { label: 'Emails Found', value: funnel.emailsFound, color: '#c9a96e' },
             ].map((step, i, arr) => {
-              const pct = funnel.discovered > 0 ? Math.round((step.value / funnel.discovered) * 100) : 0
-              const widthPct = funnel.discovered > 0 ? Math.max((step.value / funnel.discovered) * 100, 15) : 25
+              const widthPct = funnel.discovered > 0 ? Math.max((step.value / funnel.discovered) * 100, 8) : 100
+              const convPct = i > 0 && arr[i-1].value > 0 ? Math.round((step.value / arr[i-1].value) * 100) : null
               return (
-                <div key={step.label} className="flex-1 flex flex-col items-center relative">
-                  {/* Bar */}
-                  <div
-                    className="rounded-md mx-auto bar-animated"
-                    style={{
-                      width: `${widthPct}%`,
-                      minWidth: '48px',
-                      height: '48px',
-                      background: step.color,
-                      opacity: 0.2,
-                      animationDelay: `${i * 150}ms`,
-                    }}
-                  />
-                  {/* Value overlay */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-[20px] font-bold text-white/80 tabular-nums font-mono">{step.value}</span>
-                  </div>
-                  {/* Label + conversion */}
-                  <div className="mt-3 text-center">
-                    <p className="text-[11px] text-white/40">{step.label}</p>
-                    {i > 0 && (
-                      <p className="text-[10px] text-white/20 font-mono mt-0.5">
-                        {Math.round((step.value / arr[i-1].value) * 100)}% of prev
-                      </p>
-                    )}
-                  </div>
-                  {/* Arrow between steps */}
-                  {i < arr.length - 1 && (
-                    <div className="absolute right-0 top-[22px] translate-x-1/2 z-10">
-                      <span className="text-white/10 text-[14px]">&rarr;</span>
+                <div key={step.label}>
+                  <div className="flex items-baseline justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12px] text-white/45">{step.label}</span>
+                      {convPct !== null && (
+                        <span className="text-[10px] text-white/20 font-mono">{convPct}%</span>
+                      )}
                     </div>
-                  )}
+                    <span className="text-[16px] font-bold text-white/75 tabular-nums font-mono">{step.value}</span>
+                  </div>
+                  <div className="h-[6px] bg-white/[0.04] rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bar-animated"
+                      style={{ width: `${widthPct}%`, background: step.color, opacity: 0.5, animationDelay: `${i * 100}ms` }}
+                    />
+                  </div>
                 </div>
               )
             })}

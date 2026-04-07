@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase, Lead } from '@/lib/supabase'
 import { formatDistanceToNow } from 'date-fns'
+import { Download } from 'lucide-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -298,7 +299,7 @@ export default function KnowledgePage() {
               }}
               className="px-3 py-1.5 bg-emerald-600 hover:bg-[#c9a96e]/15 text-[#c9a96e] text-xs font-medium rounded-lg transition-colors shrink-0"
             >
-              Download All CSV
+              <Download className="w-3.5 h-3.5" strokeWidth={1.8} />
             </button>
           </div>
 
@@ -358,9 +359,9 @@ export default function KnowledgePage() {
                       a.click()
                       URL.revokeObjectURL(url)
                     }}
-                    className="px-2 py-1 text-xs text-white/45 hover:text-white/70 hover:bg-white/[0.06] rounded transition-colors"
+                    className="p-1.5 text-white/25 hover:text-white/50 hover:bg-white/[0.06] rounded transition-colors"
                   >
-                    CSV
+                    <Download className="w-3.5 h-3.5" strokeWidth={1.8} />
                   </button>
                 </button>
 
