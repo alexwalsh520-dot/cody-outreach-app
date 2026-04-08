@@ -66,25 +66,15 @@ export default function UsagePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-white">Usage</h1>
-        <p className="text-sm text-white/30 mt-0.5">API spend by agent and service</p>
-      </div>
-
-      {/* Info note */}
-      <div className="bg-[#161619]/60 border border-white/[0.06] rounded-xl p-3 flex items-start gap-2">
-        <span className="text-base">📝</span>
-        <p className="text-xs text-white/45 leading-relaxed">
-          Usage data is logged by Cody and sub-agents via the Supabase logger. Run{' '}
-          <code className="bg-[#1c1c20] px-1 py-0.5 rounded text-white/60 text-[11px]">node tools/supabase-logger.mjs --table usage_events --agent cody --service openrouter --cost 0.05 --description "..."</code>
-        </p>
+        <h1 className="text-xl font-bold text-white">Costs</h1>
+        <p className="text-sm text-white/30 mt-0.5">Pipeline operating costs</p>
       </div>
 
       {!hasData ? (
         <div className="bg-[#161619] rounded-xl p-12 border border-white/[0.06] text-center">
-          <p className="text-3xl mb-3">📊</p>
-          <p className="text-white/45 font-medium">No usage data yet.</p>
+          <p className="text-white/45 font-medium">No cost data yet</p>
           <p className="text-white/20 text-sm mt-1">
-            Usage events will appear here once Cody and sub-agents start logging API costs.
+            Costs appear here after the daily pipeline runs.
           </p>
         </div>
       ) : (
