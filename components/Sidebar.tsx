@@ -4,18 +4,17 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import {
-  LayoutDashboard, Database, Send, DollarSign, Radio,
+  LayoutDashboard, Database, Send, DollarSign,
 } from 'lucide-react'
 import { type LucideIcon } from 'lucide-react'
 
-type NavItem = { href: string; label: string; icon: LucideIcon; live?: boolean }
+type NavItem = { href: string; label: string; icon: LucideIcon }
 
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/knowledge', label: 'Lead Database', icon: Database },
+  { href: '/knowledge', label: 'Leads', icon: Database },
   { href: '/campaigns', label: 'Campaigns', icon: Send },
-  { href: '/usage', label: 'Usage', icon: DollarSign },
-  { href: '/office', label: 'Live Feed', icon: Radio, live: true },
+  { href: '/usage', label: 'Costs', icon: DollarSign },
 ]
 
 export default function Sidebar() {
@@ -46,9 +45,6 @@ export default function Sidebar() {
                   strokeWidth={1.7}
                 />
                 <span>{item.label}</span>
-                {item.live && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400/70 live-dot" />
-                )}
               </Link>
             )
           })}

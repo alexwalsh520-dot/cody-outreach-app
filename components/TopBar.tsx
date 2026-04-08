@@ -5,18 +5,33 @@ import { supabase } from '@/lib/supabase'
 import { Zap } from 'lucide-react'
 
 export default function TopBar() {
-  const [leadCount, setLeadCount] = useState<number | null>(null)
-  const [emailCount, setEmailCount] = useState<number | null>(null)
+  const [todayEmails, setTodayEmails] = useState<number | null>(null)
+  const [monthCost, setMonthCost] = useState<number | null>(null)
 
   useEffect(() => {
-    const fetch = async () => {
-      const { count: leads } = await supabase.from('leads').select('*', { count: 'exact', head: true })
-      const { count: emails } = await supabase.from('leads').select('*', { count: 'exact', head: true }).not('email', 'is', null)
-      setLeadCount(leads || 0)
-      setEmailCount(emails || 0)
-    }
-    fetch()
+    const today = new Date().toISOString().split('T')[0]
+    const monthStart = new Date()
+    monthStart.setDate(1)
+    monthStart.setHours(0, 0, 0, 0)
+
+    Promise.all([
+      supabase
+        .from('leads')
+        .select('*', { count: 'exact', head: true })
+        .eq('batch_date', today)
+        .in('status', ['email_ready', 'mgmt_email']),
+      supabase
+        .from('usage_events')
+        .select('cost_usd')
+        .gte('created_at', monthStart.toISOString()),
+    ]).then(([emailRes, costRes]) => {
+      setTodayEmails(emailRes.count || 0)
+      const costs = costRes.data || []
+      setMonthCost(costs.reduce((s: number, e: any) => s + (e.cost_usd || 0), 0))
+    })
   }, [])
+
+  const monthName = new Date().toLocaleString('default', { month: 'short' })
 
   return (
     <header className="h-12 bg-[#101014] border-b border-white/[0.06] px-5 flex items-center justify-between shrink-0">
@@ -32,22 +47,24 @@ export default function TopBar() {
       </div>
 
       <div className="flex items-center gap-6">
-        {leadCount !== null && (
-          <div className="flex items-center gap-5">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-white/25">Leads</span>
-              <span className="text-[12px] font-semibold text-white/60 font-mono tabular-nums">{leadCount}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-white/25">Emails</span>
-              <span className="text-[12px] font-semibold text-[#c9a96e]/80 font-mono tabular-nums">{emailCount}</span>
-            </div>
+        {todayEmails !== null && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-white/25">Today</span>
+            <span className={`text-[13px] font-bold font-mono tabular-nums ${
+              todayEmails >= 100 ? 'text-[#c9a96e]' : 'text-white/60'
+            }`}>
+              {todayEmails}/100
+            </span>
           </div>
         )}
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 live-dot" />
-          <span className="text-[11px] text-white/25">Online</span>
-        </div>
+        {monthCost !== null && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-white/25">{monthName}</span>
+            <span className="text-[12px] font-semibold text-white/40 font-mono tabular-nums">
+              ${monthCost.toFixed(0)}
+            </span>
+          </div>
+        )}
       </div>
     </header>
   )
