@@ -40,3 +40,9 @@ agents/rex/data/
 agents/rex/*.csv
 agents/rex/*.log
 agents/rex/package-lock.json
+
+# Lead gen pipeline
+lead-gen/node_modules/
+lead-gen/.env
+lead-gen/output/
+lead-gen/state/

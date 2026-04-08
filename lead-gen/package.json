@@ -1,0 +1,16 @@
+{
+  "name": "lead-gen",
+  "version": "3.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node index.js --test",
+    "emails": "node index.js --collect-emails"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@supabase/supabase-js": "^2.101.1",
+    "apify-client": "^2.9.0",
+    "dotenv": "^16.4.0"
+  }
+}
