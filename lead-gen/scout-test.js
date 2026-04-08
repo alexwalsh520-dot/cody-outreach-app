@@ -6,13 +6,19 @@
  *   node scout-test.js cbum                  # from Chris Bumstead's similar accounts
  *   node scout-test.js davidlaid             # from David Laid's similar accounts
  *   node scout-test.js cbum davidlaid        # chain multiple seeds
+ *   node scout-test.js --auto                # auto-pick seeds from database
+ *   node scout-test.js --auto --seeds=5      # auto-pick 5 seeds
+ *   node scout-test.js --daily-batch         # run until 100 emails for today
+ *   node scout-test.js --daily-batch --target=50  # custom target
  *
  * Pipeline:
  *   1. DISCOVER — Instagram similar/related accounts from seed(s)
  *   2. ENRICH   — Get bios, follower counts, websites via profile scraper
  *   3. QUALIFY  — Claude Haiku ICP scoring (full reasoning shown)
  *   4. FIND EMAIL — Waterfall: bio → Linktree mailto → landing page → Linktree links
- *   5. OUTPUT   — Full detail table + CSV
+ *   5. YOUTUBE  — Deep YouTube channel discovery (5-layer)
+ *   6. DATAOVERCOFFEE — YouTube → business email extraction
+ *   7. OUTPUT   — Full detail table + CSV + Supabase write
  */
 
 import dotenv from 'dotenv';
@@ -1138,138 +1144,268 @@ async function getAutoSeeds(count = 3) {
   return shuffled.slice(0, count).map(d => d.instagram_handle);
 }
 
+// ─── DAILY BATCH HELPERS ───────────────────────────────────────────────────
+
+async function getTodayEmailCount() {
+  if (!supabase) return 0;
+  const today = new Date().toISOString().split('T')[0];
+  const { count } = await supabase
+    .from('leads')
+    .select('*', { count: 'exact', head: true })
+    .eq('batch_date', today)
+    .in('status', ['email_ready', 'mgmt_email']);
+  return count || 0;
+}
+
+async function logCost(service, description, costUsd) {
+  if (!supabase) return;
+  await supabase.from('usage_events').insert({
+    agent: 'scout',
+    service,
+    description,
+    cost_usd: costUsd,
+  });
+}
+
+// ─── RUN SINGLE SEED — Extracted pipeline steps 1-7 ───────────────────────
+
+async function runSingleSeed(seed) {
+  const seedStart = Date.now();
+  const stats = { discovered: 0, inRange: 0, qualified: 0, emailsFound: 0 };
+
+  try {
+    // ── Step 1: Discover similar accounts from seed ──
+    logSection(`DISCOVER: Similar accounts from @${seed}`);
+
+    let allProfiles = [];
+    try {
+      const profiles = await discoverSimilar(seed);
+      allProfiles.push(...profiles);
+    } catch (err) {
+      log(`Error discovering from @${seed}: ${err.message}`);
+      return { emailsFound: 0, stats };
+    }
+
+    // Deduplicate
+    const seen = new Set();
+    const unique = allProfiles.filter(p => {
+      if (!p.username || seen.has(p.username)) return false;
+      seen.add(p.username);
+      return true;
+    });
+
+    // Remove seed itself
+    const filtered = unique.filter(p => p.username !== seed);
+
+    // Dedup against Supabase — skip profiles we've already processed
+    const existingHandles = await checkDuplicates(filtered.map(p => p.username));
+    const fresh = existingHandles.size > 0
+      ? filtered.filter(p => !existingHandles.has(p.username))
+      : filtered;
+
+    if (existingHandles.size > 0) {
+      log(`\nDedup: ${existingHandles.size} already in database, ${fresh.length} new`);
+    }
+    log(`\nTotal discovered: ${allProfiles.length} → ${fresh.length} new unique (excl. seed + dupes)`);
+    stats.discovered = allProfiles.length;
+
+    if (fresh.length === 0) {
+      log('No new profiles discovered. All already in database or no results.');
+      return { emailsFound: 0, stats };
+    }
+
+    // ── Step 2: Enrich (get bios, follower counts, websites) ──
+    const enriched = await enrichProfiles(fresh.slice(0, 50));
+
+    // Filter by follower count
+    const inRange = enriched.filter(p => p.followersCount >= MIN_FOLLOWERS && p.followersCount <= MAX_FOLLOWERS);
+    log(`\nIn follower range (${(MIN_FOLLOWERS/1000)}K-${(MAX_FOLLOWERS/1_000_000)}M): ${inRange.length}/${enriched.length}`);
+    stats.inRange = inRange.length;
+
+    if (inRange.length === 0) {
+      log('No profiles in range. See enrichment output above for all follower counts.');
+      return { emailsFound: 0, stats };
+    }
+
+    // ── Step 3: Qualify with Haiku ──
+    const checked = await qualifyBatch(inRange);
+    const qualified = checked.filter(r => r.qualified);
+    stats.qualified = qualified.length;
+
+    // ── Step 4: Find emails for qualified leads ──
+    let finalResults = checked;
+    if (qualified.length > 0) {
+      const withEmails = await findEmailsBatch(qualified);
+      const emailMap = new Map(withEmails.map(w => [w.username, w]));
+      finalResults = checked.map(s => emailMap.get(s.username) || s);
+    }
+
+    // ── Step 5: Deep YouTube discovery ──
+    finalResults = await deepYoutubeDiscovery(finalResults);
+
+    // ── Step 6: DataOverCoffee — extract emails from YouTube channels ──
+    finalResults = await dataOverCoffeeEmails(finalResults);
+
+    // ── Summary ──
+    printSummary(finalResults);
+
+    // Attach pipeline funnel stats for Supabase logging
+    const qualifiedWithEmail = finalResults.filter(r => r.qualified && r.email);
+    const qualifiedWithYT = finalResults.filter(r => r.qualified && (r._youtubeUrl || (r._youtubeUrls && r._youtubeUrls.length > 0)));
+    const elapsed = ((Date.now() - seedStart) / 1000).toFixed(1);
+
+    finalResults._pipelineStats = {
+      discovered: allProfiles.length,
+      inRange: inRange.length,
+      qualified: qualified.length,
+      emailsRejected: finalResults.filter(r => r.emailSource === 'rejected').length,
+      youtubeChannels: qualifiedWithYT.length,
+      docSubmitted: 0,
+      docReturned: 0,
+      durationSecs: parseFloat(elapsed),
+    };
+
+    stats.emailsFound = qualifiedWithEmail.length;
+
+    // ── Step 7: Write to Supabase (permanent database + dedup) ──
+    await writeLeadsToSupabase(finalResults);
+
+    return { emailsFound: qualifiedWithEmail.length, stats };
+  } catch (err) {
+    log(`Pipeline error for seed @${seed}: ${err.message}`);
+    return { emailsFound: 0, stats };
+  }
+}
+
 // ─── MAIN ───────────────────────────────────────────────────────────────────
 
 async function main() {
   const start = Date.now();
   const rawArgs = process.argv.slice(2);
   const isAuto = rawArgs.includes('--auto');
+  const isDailyBatch = rawArgs.includes('--daily-batch');
+  const batchTarget = parseInt(rawArgs.find(a => a.startsWith('--target='))?.split('=')[1] || '100');
   const seedCount = parseInt(rawArgs.find(a => a.startsWith('--seeds='))?.split('=')[1] || '3');
   let args = rawArgs.filter(a => !a.startsWith('--')).map(a => a.replace(/^@/, ''));
 
-  if (args.length === 0 && !isAuto) {
+  if (args.length === 0 && !isAuto && !isDailyBatch) {
     console.log('Usage:');
     console.log('  node scout-test.js <seed_username>           # similar accounts from one seed');
     console.log('  node scout-test.js cbum davidlaid            # chain multiple seeds');
     console.log('  node scout-test.js --auto                    # auto-pick seeds from database');
     console.log('  node scout-test.js --auto --seeds=5          # auto-pick 5 seeds');
+    console.log('  node scout-test.js --daily-batch             # run until 100 emails for today');
+    console.log('  node scout-test.js --daily-batch --target=50 # custom target');
     console.log('');
     console.log('Examples:');
     console.log('  node scout-test.js cbum');
     console.log('  node scout-test.js --auto');
+    console.log('  node scout-test.js --daily-batch');
     process.exit(0);
-  }
-
-  // Auto-seed from Supabase if --auto flag
-  if (isAuto) {
-    args = await getAutoSeeds(seedCount);
-    if (args.length === 0) {
-      console.error('No seeds available in database. Run manually first with: node scout-test.js cbum');
-      process.exit(1);
-    }
-    console.log(`  AUTO-SEED: Selected ${args.length} seeds from database: ${args.map(a => '@' + a).join(', ')}`);
   }
 
   if (!process.env.APIFY_API_TOKEN) { console.error('APIFY_API_TOKEN not set'); process.exit(1); }
   if (!process.env.ANTHROPIC_API_KEY) { console.error('ANTHROPIC_API_KEY not set'); process.exit(1); }
 
-  console.log('\n' + '='.repeat(70));
-  console.log('  SCOUT/MASON TEST — Full Pipeline (verbose)');
-  console.log('='.repeat(70));
+  // ─── DAILY BATCH MODE ──────────────────────────────────────────────────────
+  if (isDailyBatch) {
+    console.log('\n' + '='.repeat(70));
+    console.log(`  DAILY BATCH — Target: ${batchTarget} emails`);
+    console.log('='.repeat(70));
 
-  // ── Step 1: Discover similar accounts from seed(s) ──
-  logSection(`DISCOVER: Similar accounts from ${args.length} seed(s): ${args.map(a => '@' + a).join(', ')}`);
+    let currentCount = await getTodayEmailCount();
+    let cycleNum = 0;
+    const maxCycles = 30; // safety limit
+    let totalDiscovered = 0, totalInRange = 0, totalQualified = 0, totalEmails = 0;
 
-  let allProfiles = [];
-  for (const seed of args) {
-    try {
-      const profiles = await discoverSimilar(seed);
-      allProfiles.push(...profiles);
-    } catch (err) {
-      log(`Error discovering from @${seed}: ${err.message}`);
+    console.log(`\n  Starting count: ${currentCount}/${batchTarget}`);
+
+    while (currentCount < batchTarget && cycleNum < maxCycles) {
+      cycleNum++;
+      console.log(`\n${'─'.repeat(70)}`);
+      console.log(`  CYCLE ${cycleNum} — ${currentCount}/${batchTarget} emails so far`);
+      console.log('─'.repeat(70));
+
+      const seeds = await getAutoSeeds(3);
+      if (seeds.length === 0) {
+        console.log('  No more seeds available. Stopping.');
+        break;
+      }
+      console.log(`  Seeds: ${seeds.map(s => '@' + s).join(', ')}`);
+
+      for (const seed of seeds) {
+        try {
+          const result = await runSingleSeed(seed);
+          if (result.stats) {
+            totalDiscovered += result.stats.discovered || 0;
+            totalInRange += result.stats.inRange || 0;
+            totalQualified += result.stats.qualified || 0;
+            totalEmails += result.emailsFound || 0;
+          }
+        } catch (err) {
+          console.log(`  Error on seed @${seed}: ${err.message}`);
+        }
+      }
+
+      currentCount = await getTodayEmailCount();
+      console.log(`\n  After cycle ${cycleNum}: ${currentCount}/${batchTarget} emails`);
     }
+
+    // Log pipeline run
+    const today = new Date().toISOString().split('T')[0];
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+    const finalCount = await getTodayEmailCount();
+
+    if (supabase) {
+      await supabase.from('pipeline_runs').insert({
+        seed: `daily-batch-${cycleNum}-cycles`,
+        batch_date: today,
+        discovered: totalDiscovered,
+        in_range: totalInRange,
+        qualified: totalQualified,
+        emails_found: finalCount,
+        duration_seconds: parseFloat(elapsed),
+      });
+
+      await supabase.from('agent_events').insert({
+        agent: 'scout',
+        event: `Daily batch complete: ${finalCount}/${batchTarget} emails (${cycleNum} cycles, ${elapsed}s)`,
+        status: finalCount >= batchTarget ? 'ok' : 'warning',
+      });
+    }
+
+    console.log('\n' + '='.repeat(70));
+    console.log(`  DAILY BATCH COMPLETE`);
+    console.log(`  Emails: ${finalCount}/${batchTarget}`);
+    console.log(`  Cycles: ${cycleNum}`);
+    console.log(`  Time: ${elapsed}s`);
+    console.log('='.repeat(70));
+
+  } else {
+    // ─── SINGLE-RUN MODE (original behavior) ────────────────────────────────
+
+    // Auto-seed from Supabase if --auto flag
+    if (isAuto) {
+      args = await getAutoSeeds(seedCount);
+      if (args.length === 0) {
+        console.error('No seeds available in database. Run manually first with: node scout-test.js cbum');
+        process.exit(1);
+      }
+      console.log(`  AUTO-SEED: Selected ${args.length} seeds from database: ${args.map(a => '@' + a).join(', ')}`);
+    }
+
+    console.log('\n' + '='.repeat(70));
+    console.log('  SCOUT/MASON TEST — Full Pipeline (verbose)');
+    console.log('='.repeat(70));
+
+    for (const seed of args) {
+      await runSingleSeed(seed);
+    }
+
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+    console.log(`\n  Time: ${elapsed}s`);
+    console.log('');
   }
-
-  // Deduplicate
-  const seen = new Set();
-  const unique = allProfiles.filter(p => {
-    if (!p.username || seen.has(p.username)) return false;
-    seen.add(p.username);
-    return true;
-  });
-  // Also remove seeds themselves
-  const filtered = unique.filter(p => !args.includes(p.username));
-
-  // Dedup against Supabase — skip profiles we've already processed
-  const existingHandles = await checkDuplicates(filtered.map(p => p.username));
-  const fresh = existingHandles.size > 0
-    ? filtered.filter(p => !existingHandles.has(p.username))
-    : filtered;
-
-  if (existingHandles.size > 0) {
-    log(`\nDedup: ${existingHandles.size} already in database, ${fresh.length} new`);
-  }
-  log(`\nTotal discovered: ${allProfiles.length} → ${fresh.length} new unique (excl. seeds + dupes)`);
-
-  if (fresh.length === 0) {
-    console.log('\nNo new profiles discovered. All already in database or no results.');
-    process.exit(1);
-  }
-
-  // ── Step 2: Enrich (get bios, follower counts, websites) ──
-  const enriched = await enrichProfiles(fresh.slice(0, 50));
-
-  // Filter by follower count
-  const inRange = enriched.filter(p => p.followersCount >= MIN_FOLLOWERS && p.followersCount <= MAX_FOLLOWERS);
-  log(`\nIn follower range (${(MIN_FOLLOWERS/1000)}K-${(MAX_FOLLOWERS/1_000_000)}M): ${inRange.length}/${enriched.length}`);
-
-  if (inRange.length === 0) {
-    log('No profiles in range. See enrichment output above for all follower counts.');
-    process.exit(0);
-  }
-
-  // ── Step 3: Qualify with Haiku ──
-  const checked = await qualifyBatch(inRange);
-  const qualified = checked.filter(r => r.qualified);
-  const rejected = checked.filter(r => !r.qualified);
-
-  // ── Step 4: Find emails for qualified leads ──
-  let finalResults = checked;
-  if (qualified.length > 0) {
-    const withEmails = await findEmailsBatch(qualified);
-    const emailMap = new Map(withEmails.map(w => [w.username, w]));
-    finalResults = checked.map(s => emailMap.get(s.username) || s);
-  }
-
-  // ── Step 5: Deep YouTube discovery ──
-  finalResults = await deepYoutubeDiscovery(finalResults);
-
-  // ── Step 6: DataOverCoffee — extract emails from YouTube channels ──
-  finalResults = await dataOverCoffeeEmails(finalResults);
-
-  // ── Summary ──
-  printSummary(finalResults);
-
-  // Attach pipeline funnel stats for Supabase logging
-  const qualifiedWithEmail = finalResults.filter(r => r.qualified && r.email);
-  const qualifiedWithYT = finalResults.filter(r => r.qualified && (r._youtubeUrl || (r._youtubeUrls && r._youtubeUrls.length > 0)));
-  const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-
-  finalResults._pipelineStats = {
-    discovered: allProfiles.length,
-    inRange: inRange.length,
-    qualified: qualified.length,
-    emailsRejected: finalResults.filter(r => r.emailSource === 'rejected').length,
-    youtubeChannels: qualifiedWithYT.length,
-    docSubmitted: 0, // TODO: track from DataOverCoffee step
-    docReturned: 0,
-    durationSecs: parseFloat(elapsed),
-  };
-
-  // ── Step 7: Write to Supabase (permanent database + dedup) ──
-  await writeLeadsToSupabase(finalResults);
-  console.log(`\n  Time: ${elapsed}s`);
-  console.log('');
 }
 
 main().catch(err => {
