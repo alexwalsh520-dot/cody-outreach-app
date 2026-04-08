@@ -32,8 +32,10 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 
 const apify = new ApifyClient({ token: process.env.APIFY_API_TOKEN });
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
-  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY)
+// Use service role key for writes (bypasses RLS). Falls back to anon key for reads-only.
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+const supabase = process.env.SUPABASE_URL && supabaseKey
+  ? createClient(process.env.SUPABASE_URL, supabaseKey)
   : null;
 
 const MIN_FOLLOWERS = 100_000;
