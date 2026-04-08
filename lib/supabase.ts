@@ -24,6 +24,8 @@ export type AgentEvent = {
 export type Lead = {
   id: string
   first_name: string | null
+  first_name_verified: boolean | null
+  first_name_sources: string | null
   full_name: string | null
   email: string | null
   email_source: string | null

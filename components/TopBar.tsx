@@ -19,7 +19,8 @@ export default function TopBar() {
         .from('leads')
         .select('*', { count: 'exact', head: true })
         .eq('batch_date', today)
-        .in('status', ['email_ready', 'mgmt_email']),
+        .in('status', ['email_ready', 'mgmt_email'])
+        .eq('first_name_verified', true),
       supabase
         .from('usage_events')
         .select('cost_usd')

@@ -8,6 +8,7 @@ type DayStats = {
   emails: number
   pendingDoc: number
   mgmt: number
+  needsNameCheck: number
 }
 
 type AllTimeStats = {
@@ -63,6 +64,7 @@ export default function DashboardPage() {
         emails: todayLeads.filter((l: any) => l.status === 'email_ready' || l.status === 'mgmt_email').length,
         pendingDoc: todayLeads.filter((l: any) => l.status === 'youtube_only').length,
         mgmt: todayLeads.filter((l: any) => l.status === 'mgmt_email').length,
+        needsNameCheck: todayLeads.filter((l: any) => l.status === 'needs_name_check').length,
       })
 
       const allLeads = allRes.data || []
@@ -100,6 +102,7 @@ export default function DashboardPage() {
       .select('first_name, email, instagram_handle, follower_count, email_source')
       .eq('batch_date', today)
       .in('status', ['email_ready', 'mgmt_email'])
+      .eq('first_name_verified', true)
       .not('email', 'is', null)
     if (!data || data.length === 0) return
     const headers = ['first_name', 'email', 'instagram_handle', 'follower_count', 'email_source']

@@ -51,9 +51,10 @@ export default function KnowledgePage() {
       })
   }, [])
 
-  // Split leads: ones with emails are "leads", ones without are "pending"
-  const leadsWithEmail = leads.filter(l => l.email)
-  const pendingLeads = leads.filter(l => !l.email && l.youtube_channel)
+  // Split leads: verified emails are "leads", unverified names need manual check, rest are pending
+  const leadsWithEmail = leads.filter(l => l.email && l.status !== 'needs_name_check')
+  const needsNameCheck = leads.filter(l => l.status === 'needs_name_check')
+  const pendingLeads = leads.filter(l => !l.email && l.youtube_channel && l.status === 'youtube_only')
 
   const filtered = leadsWithEmail.filter((l) => {
     const q = search.toLowerCase()

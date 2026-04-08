@@ -40,7 +40,8 @@ const supabase = process.env.SUPABASE_URL && supabaseKey
 
 const MIN_FOLLOWERS = 100_000;
 const MAX_FOLLOWERS = 2_000_000;
-const QUALIFY_MODEL = 'claude-haiku-4-5-20251001';
+const config = JSON.parse(readFileSync('./config.json', 'utf-8'));
+const QUALIFY_MODEL = config.qualifyModel || 'claude-haiku-4-5-20251001';
 const CONCURRENCY = 10;
 // No score — binary qualified yes/no
 const SIMILAR_ACTOR = 'thenetaji/instagram-related-user-scraper';
@@ -48,13 +49,19 @@ const ENRICH_ACTOR = 'apify/instagram-profile-scraper';
 
 if (!existsSync('./output')) mkdirSync('./output', { recursive: true });
 
-const ICP_PROMPT = JSON.parse(readFileSync('./config.json', 'utf-8')).icpPrompt;
+const ICP_PROMPT = config.icpPrompt;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function log(msg) { console.log(`  ${msg}`); }
 function logSection(msg) { console.log(`\n${'─'.repeat(70)}\n  ${msg}\n${'─'.repeat(70)}`); }
+
+// Use US Pacific date for batch_date to match user's timezone
+// Cloud tasks run in UTC, but the user sees dates in PT
+function getTodayPT() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }); // returns YYYY-MM-DD
+}
 
 function extractEmailsFromText(text) {
   if (!text) return [];
@@ -914,6 +921,79 @@ async function dataOverCoffeeEmails(profiles) {
   return profiles;
 }
 
+// ─── FIRST NAME VALIDATION ─────────────────────────────────────────────────
+
+// Common non-name words that appear as first words in IG display names
+const NOT_NAMES = new Set([
+  'the', 'official', 'team', 'coach', 'dr', 'king', 'queen', 'fit', 'gym',
+  'workout', 'training', 'fitness', 'health', 'lift', 'get', 'just', 'my',
+  'your', 'hey', 'hi', 'new', 'best', 'top', 'pro', 'real', 'big', 'mr',
+  'ms', 'mrs', 'miss', 'sir', 'dj', 'mc', 'aka', 'not', 'use', 'code',
+  'link', 'click', 'shop', 'buy', 'free', 'join', 'follow', 'dm', 'bio',
+  'all', 'live', 'love', 'eat', 'run', 'raw', 'hot', 'god', 'built',
+  'stay', 'hard', 'push', 'grind', 'hustle', 'beast', 'gains', 'shredded',
+  'aesthetic', 'physique', 'natural', 'organic', 'vegan', 'plant', 'based',
+]);
+
+function isValidFirstName(name) {
+  if (!name || typeof name !== 'string') return false;
+  const clean = name.trim();
+  // Too short or too long
+  if (clean.length < 2 || clean.length > 20) return false;
+  // Contains underscores, numbers, or dots (likely a username)
+  if (/[_\d.]/.test(clean)) return false;
+  // All caps and more than 4 chars (likely a slogan: "LIFT", "GRIND", "BEAST")
+  if (/^[A-Z]+$/.test(clean) && clean.length > 4) return false;
+  // Starts with a number
+  if (/^\d/.test(clean)) return false;
+  // Is a common non-name word
+  if (NOT_NAMES.has(clean.toLowerCase())) return false;
+  // Contains only consonants (not a name)
+  if (/^[^aeiouAEIOU]+$/.test(clean) && clean.length > 3) return false;
+  // Looks like a name: starts with a letter, mostly letters
+  return /^[A-Za-z]/.test(clean);
+}
+
+function extractFirstName(profile) {
+  // Try multiple sources in priority order
+  const candidates = [];
+
+  // Source 1: Instagram display name first word
+  const rawFirst = (profile.fullName || '').split(/[\s|/·•–—-]+/)[0]
+    .replace(/[^\w'-]/g, '') // strip emojis, special chars
+    .replace(/\.com/gi, '')
+    .trim();
+  if (rawFirst) candidates.push({ name: rawFirst, source: 'display_name' });
+
+  // Source 2: If YouTube channel name exists (from DataOverCoffee)
+  if (profile._youtubeChannelName) {
+    const ytFirst = profile._youtubeChannelName.split(/[\s|/·•–—-]+/)[0]
+      .replace(/[^\w'-]/g, '')
+      .trim();
+    if (ytFirst) candidates.push({ name: ytFirst, source: 'youtube' });
+  }
+
+  // Source 3: Second word of display name (for "Fit Mike", "Coach Sarah" patterns)
+  const words = (profile.fullName || '').split(/[\s|/·•–—-]+/).filter(w => w.length > 1);
+  if (words.length >= 2) {
+    const second = words[1].replace(/[^\w'-]/g, '').trim();
+    if (second) candidates.push({ name: second, source: 'display_name_second' });
+  }
+
+  // Evaluate candidates
+  for (const candidate of candidates) {
+    const formatted = candidate.name.charAt(0).toUpperCase() + candidate.name.slice(1).toLowerCase();
+    if (isValidFirstName(formatted)) {
+      return { firstName: formatted, verified: true, source: candidate.source };
+    }
+  }
+
+  // No valid name found — use username as fallback but mark unverified
+  const fallback = profile.username || 'Unknown';
+  const formatted = fallback.charAt(0).toUpperCase() + fallback.slice(1).toLowerCase();
+  return { firstName: formatted, verified: false, source: 'username_fallback' };
+}
+
 // ─── SUPABASE: Write leads + dedup ──────────────────────────────────────────
 
 async function checkDuplicates(usernames) {
@@ -952,22 +1032,18 @@ async function writeLeadsToSupabase(results) {
     else if (r.email && r.emailType === 'management') status = 'mgmt_email';
     else if (r._youtubeUrl || (r._youtubeUrls && r._youtubeUrls.length > 0)) status = 'youtube_only';
 
-    // Extract a clean first name
-    const rawFirst = (r.fullName || '').split(' ')[0] || '';
-    // Clean: strip emojis, URLs, .COM, all-caps normalization
-    let firstName = rawFirst
-      .replace(/[^\w\s'-]/g, '') // strip emojis/special chars
-      .replace(/\.com/gi, '')    // strip .COM
-      .trim();
-    // If it's clearly not a name (all caps slogan, URL, single char), fall back to username
-    if (!firstName || firstName.length < 2 || /^[A-Z\s.]+$/.test(firstName) && firstName.length > 6) {
-      firstName = r.username;
+    // Extract and validate first name from multiple sources
+    const nameResult = extractFirstName(r);
+
+    // If name isn't verified and lead has email, mark as needs_name_check instead of email_ready
+    if (!nameResult.verified && status === 'email_ready') {
+      status = 'needs_name_check';
     }
-    // Proper case: first letter up, rest lower
-    firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 
     return {
-      first_name: firstName,
+      first_name: nameResult.firstName,
+      first_name_verified: nameResult.verified,
+      first_name_sources: JSON.stringify([nameResult.source]),
       full_name: r.fullName || '',
       email: r.email || null,
       email_source: r.emailSource || null,
@@ -982,7 +1058,7 @@ async function writeLeadsToSupabase(results) {
       status,
       source: 'scout',
       source_detail: r._source || '',
-      batch_date: new Date().toISOString().split('T')[0],
+      batch_date: getTodayPT(),
       qualification_reasoning: r.reject_reason || 'qualified',
       notes: r.emailType === 'management' ? 'EMAIL IS MANAGEMENT — use different sequence' : (r.emailDetail || '').includes('rejected') ? r.emailDetail : null,
     };
@@ -1022,7 +1098,7 @@ async function writeLeadsToSupabase(results) {
     const s = results._pipelineStats;
     await supabase.from('pipeline_runs').insert({
       seed,
-      batch_date: new Date().toISOString().split('T')[0],
+      batch_date: getTodayPT(),
       discovered: s.discovered || 0,
       in_range: s.inRange || 0,
       qualified: s.qualified || 0,
@@ -1164,12 +1240,13 @@ async function getAutoSeeds(count = 3) {
 
 async function getTodayEmailCount() {
   if (!supabase) return 0;
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayPT();
   const { count } = await supabase
     .from('leads')
     .select('*', { count: 'exact', head: true })
     .eq('batch_date', today)
-    .in('status', ['email_ready', 'mgmt_email']);
+    .in('status', ['email_ready', 'mgmt_email'])
+    .eq('first_name_verified', true);
   return count || 0;
 }
 
@@ -1181,6 +1258,123 @@ async function logCost(service, description, costUsd) {
     description,
     cost_usd: costUsd,
   });
+}
+
+// ─── DATAOVERCOFFEE HARVEST — Re-check youtube_only leads from previous days ──
+
+async function harvestDataOverCoffee() {
+  if (!supabase) return { harvested: 0, checked: 0 };
+
+  // Find youtube_only leads that haven't been checked yet (from ANY previous day)
+  const { data: pendingLeads } = await supabase
+    .from('leads')
+    .select('id, instagram_handle, youtube_channel, batch_date')
+    .eq('status', 'youtube_only')
+    .not('youtube_channel', 'is', null)
+    .order('created_at', { ascending: true })
+    .limit(50); // batch of 50 max to control costs
+
+  if (!pendingLeads || pendingLeads.length === 0) {
+    log('No pending DataOverCoffee leads to harvest.');
+    return { harvested: 0, checked: 0 };
+  }
+
+  logSection(`HARVEST: Re-checking ${pendingLeads.length} youtube_only leads via DataOverCoffee`);
+
+  const channels = pendingLeads
+    .map(l => l.youtube_channel)
+    .filter(Boolean);
+
+  if (channels.length === 0) return { harvested: 0, checked: 0 };
+
+  let harvested = 0;
+  try {
+    const run = await apify.actor(DATAOVERCOFFEE_ACTOR).call(
+      { channels },
+      { waitSecs: 300 }
+    );
+
+    log(`Run status: ${run.status} | Cost: $${run.usageTotalUsd || '?'}`);
+    await logCost('dataovercoffee', `Harvest: ${channels.length} channels re-checked`, run.usageTotalUsd || (channels.length * 0.12));
+
+    if (run.status === 'SUCCEEDED' || run.status === 'RUNNING') {
+      const { items } = await apify.dataset(run.defaultDatasetId).listItems();
+
+      const emailResults = items.filter(i => i.Status === 'EMAIL_AVAILABLE' && i.Email);
+      const noEmailResults = items.filter(i => i.Status !== 'EMAIL_AVAILABLE');
+
+      // Process found emails
+      for (const item of emailResults) {
+        const channelHandle = (item.ChannelHandle || '').toLowerCase().replace('@', '');
+        const channelId = (item.ChannelId || '').toLowerCase();
+
+        const matching = pendingLeads.find(l => {
+          const ch = (l.youtube_channel || '').toLowerCase();
+          return ch.includes(channelHandle) || ch.includes(channelId) ||
+                 (channelHandle && channelHandle === ch.replace(/^@/, '').replace(/https?:\/\/.*\/@?/, ''));
+        });
+
+        if (!matching) continue;
+
+        // Validate email with Haiku
+        const validation = await validateEmailWithAI(item.Email, { username: matching.instagram_handle, _emailSource: 'DataOverCoffee harvest' });
+
+        if (!validation.valid || validation.type === 'platform' || validation.type === 'brand' || validation.type === 'spam') {
+          log(`  \x1b[31m✗\x1b[0m @${matching.instagram_handle} → ${item.Email} REJECTED (${validation.type})`);
+          continue;
+        }
+
+        const status = validation.type === 'management' ? 'mgmt_email' : 'email_ready';
+        const today = getTodayPT();
+
+        // Re-validate first name since we now have YouTube channel name
+        const nameResult = extractFirstName({
+          fullName: '', // we don't have this from the lead record
+          username: matching.instagram_handle,
+          _youtubeChannelName: item.ChannelName || null,
+        });
+
+        const finalStatus = (!nameResult.verified && status === 'email_ready') ? 'needs_name_check' : status;
+
+        await supabase.from('leads').update({
+          email: item.Email,
+          email_source: 'dataovercoffee',
+          status: finalStatus,
+          first_name: nameResult.verified ? nameResult.firstName : undefined, // only update if better
+          first_name_verified: nameResult.verified || undefined,
+          batch_date: today, // move to today's batch since that's when the email became available
+          enriched_at: new Date().toISOString(),
+        }).eq('id', matching.id);
+
+        harvested++;
+        log(`  \x1b[32m✓\x1b[0m @${matching.instagram_handle} → ${item.Email} (${finalStatus})`);
+      }
+
+      // Mark leads where DOC confirmed NO email exists as youtube_no_email so we don't re-check forever
+      for (const item of noEmailResults) {
+        const channelHandle = (item.ChannelHandle || '').toLowerCase().replace('@', '');
+        const channelId = (item.ChannelId || '').toLowerCase();
+
+        const matching = pendingLeads.find(l => {
+          const ch = (l.youtube_channel || '').toLowerCase();
+          return ch.includes(channelHandle) || ch.includes(channelId);
+        });
+
+        if (matching) {
+          await supabase.from('leads').update({
+            status: 'youtube_no_email',
+            notes: `DataOverCoffee: ${item.Status || 'NO_EMAIL'} (checked ${getTodayPT()})`,
+          }).eq('id', matching.id);
+          log(`  \x1b[90m✗\x1b[0m @${matching.instagram_handle} → no email available (marked, won't re-check)`);
+        }
+      }
+    }
+  } catch (err) {
+    log(`DataOverCoffee harvest error: ${err.message}`);
+  }
+
+  log(`\nHarvest complete: ${harvested} new emails from ${pendingLeads.length} checked`);
+  return { harvested, checked: pendingLeads.length };
 }
 
 // ─── RUN SINGLE SEED — Extracted pipeline steps 1-7 ───────────────────────
@@ -1329,9 +1523,13 @@ async function main() {
     console.log(`  DAILY BATCH — Target: ${batchTarget} emails`);
     console.log('='.repeat(70));
 
+    // Phase 1: Harvest emails from previous days' DataOverCoffee submissions
+    const { harvested: docHarvested, checked: docChecked } = await harvestDataOverCoffee();
+
     let currentCount = await getTodayEmailCount();
     let cycleNum = 0;
-    const maxCycles = 30; // safety limit
+    const maxCycles = 50; // safety limit — at ~6 emails/cycle, 50 cycles = ~300 email capacity
+    let zeroNewCycles = 0; // track consecutive cycles that discover 0 new profiles
     let totalDiscovered = 0, totalInRange = 0, totalQualified = 0, totalEmails = 0;
 
     console.log(`\n  Starting count: ${currentCount}/${batchTarget}`);
@@ -1363,12 +1561,26 @@ async function main() {
         }
       }
 
+      const prevCount = currentCount;
       currentCount = await getTodayEmailCount();
-      console.log(`\n  After cycle ${cycleNum}: ${currentCount}/${batchTarget} emails`);
+      const cycleEmails = currentCount - prevCount;
+      console.log(`\n  After cycle ${cycleNum}: ${currentCount}/${batchTarget} emails (+${cycleEmails} this cycle)`);
+
+      // Track diminishing returns
+      if (cycleEmails === 0) {
+        zeroNewCycles++;
+        if (zeroNewCycles >= 5) {
+          console.log(`\n  ⚠ WARNING: ${zeroNewCycles} consecutive cycles with 0 new emails.`);
+          console.log(`  Discovery may be saturated — most similar profiles already processed.`);
+          console.log(`  Consider adding new seed sources or hashtag mining.`);
+        }
+      } else {
+        zeroNewCycles = 0;
+      }
     }
 
     // Log pipeline run
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayPT();
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);
     const finalCount = await getTodayEmailCount();
 
@@ -1393,6 +1605,7 @@ async function main() {
     console.log('\n' + '='.repeat(70));
     console.log(`  DAILY BATCH COMPLETE`);
     console.log(`  Emails: ${finalCount}/${batchTarget}`);
+    console.log(`  DOC Harvest: ${docHarvested} emails from ${docChecked} youtube_only leads`);
     console.log(`  Cycles: ${cycleNum}`);
     console.log(`  Time: ${elapsed}s`);
     console.log('='.repeat(70));
