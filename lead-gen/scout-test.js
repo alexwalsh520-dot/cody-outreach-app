@@ -266,6 +266,7 @@ async function discoverSimilar(seedUsername) {
 
   const { items } = await apify.dataset(run.defaultDatasetId).listItems();
   log(`Found ${items.length} related accounts`);
+  await logCost('apify', `Discovery: ${items.length} related from @${seedUsername}`, run.usageTotalUsd || 0);
 
   return items.map(item => ({
     username: (item.username || '').toLowerCase(),
@@ -298,6 +299,7 @@ async function enrichProfiles(profiles) {
         if (u) enrichedMap.set(u, item);
       }
       log(`Batch ${Math.floor(i / 50) + 1}: ${items.length}/${batch.length} profiles returned`);
+      await logCost('apify', `Enrich: ${items.length} profiles @ $0.0023`, run.usageTotalUsd || (items.length * 0.0023));
     } catch (err) {
       log(`Batch error: ${(err.message || '').slice(0, 80)}`);
     }
@@ -405,6 +407,10 @@ async function qualifyBatch(profiles) {
   }
 
   console.log('');
+  // Haiku cost estimate: ~150 input tokens + ~30 output tokens per call
+  // Haiku pricing: $0.80/M input, $4.00/M output
+  const haikuCost = profiles.length * ((150 * 0.80 / 1_000_000) + (30 * 4.00 / 1_000_000));
+  await logCost('anthropic', `Qualification: ${profiles.length} profiles via Haiku`, haikuCost);
   log('');
   log('QUALIFICATION RESULTS:');
   log('');
@@ -727,6 +733,12 @@ async function findEmailsBatch(profiles) {
 
   log(`EMAILS: ${found} valid, ${rejected} rejected by AI, ${results.length - found - rejected} not found`);
   if (Object.keys(bySource).length > 0) log(`BY SOURCE: ${JSON.stringify(bySource)}`);
+  // Log Haiku cost for email validation calls
+  const validationCalls = found + rejected; // every email found gets validated
+  if (validationCalls > 0) {
+    const valCost = validationCalls * ((200 * 0.80 / 1_000_000) + (50 * 4.00 / 1_000_000));
+    await logCost('anthropic', `Email validation: ${validationCalls} emails via Haiku`, valCost);
+  }
   return results;
 }
 
@@ -888,6 +900,7 @@ async function dataOverCoffeeEmails(profiles) {
 
       log('');
       log(`DataOverCoffee: ${matched} new emails from ${items.length} results (cost: $${run.usageTotalUsd})`);
+      await logCost('dataovercoffee', `YouTube emails: ${matched} found from ${items.length} channels`, run.usageTotalUsd || (items.length * 0.12));
 
       // If run was still going, save the run ID so we can check later
       if (run.status === 'RUNNING') {
@@ -1009,6 +1022,7 @@ async function writeLeadsToSupabase(results) {
     const s = results._pipelineStats;
     await supabase.from('pipeline_runs').insert({
       seed,
+      batch_date: new Date().toISOString().split('T')[0],
       discovered: s.discovered || 0,
       in_range: s.inRange || 0,
       qualified: s.qualified || 0,
