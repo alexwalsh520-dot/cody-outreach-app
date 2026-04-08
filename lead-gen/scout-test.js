@@ -57,10 +57,11 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function log(msg) { console.log(`  ${msg}`); }
 function logSection(msg) { console.log(`\n${'─'.repeat(70)}\n  ${msg}\n${'─'.repeat(70)}`); }
 
-// Use US Pacific date for batch_date to match user's timezone
-// Cloud tasks run in UTC, but the user sees dates in PT
+// Use user's timezone for batch_date (configured in config.json)
+// Cloud tasks run in UTC, but dates should match user's local day
+const TIMEZONE = config.timezone || 'Asia/Makassar'; // Bali = WITA (UTC+8)
 function getTodayPT() {
-  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }); // returns YYYY-MM-DD
+  return new Date().toLocaleDateString('en-CA', { timeZone: TIMEZONE }); // returns YYYY-MM-DD
 }
 
 function extractEmailsFromText(text) {
