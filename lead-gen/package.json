@@ -3,9 +3,10 @@
   "version": "3.0.0",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "test": "node index.js --test",
-    "emails": "node index.js --collect-emails"
+    "start": "node scout-test.js",
+    "daily": "node scout-test.js --daily-batch",
+    "daily:150": "node scout-test.js --daily-batch --target=150",
+    "check": "node --check scout-test.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",

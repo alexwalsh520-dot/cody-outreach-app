@@ -8,7 +8,7 @@
  *   node scout-test.js cbum davidlaid        # chain multiple seeds
  *   node scout-test.js --auto                # auto-pick seeds from database
  *   node scout-test.js --auto --seeds=5      # auto-pick 5 seeds
- *   node scout-test.js --daily-batch         # run until 100 emails for today
+ *   node scout-test.js --daily-batch         # run until 150 emails for today
  *   node scout-test.js --daily-batch --target=50  # custom target
  *
  * Pipeline:
@@ -22,32 +22,41 @@
  */
 
 import dotenv from 'dotenv';
-dotenv.config({ override: true });
+dotenv.config({ path: new URL('../.env.production', import.meta.url), override: false });
+dotenv.config({ path: new URL('.env', import.meta.url), override: true });
 import { ApifyClient } from 'apify-client';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
 // ─── Config ─────────────────────────────────────────────────────────────────
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const apify = new ApifyClient({ token: process.env.APIFY_API_TOKEN });
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 // Use service role key for writes (bypasses RLS). Falls back to anon key for reads-only.
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-const supabase = process.env.SUPABASE_URL && supabaseKey
-  ? createClient(process.env.SUPABASE_URL, supabaseKey)
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = supabaseUrl && supabaseKey
+  ? createClient(supabaseUrl, supabaseKey)
   : null;
 
 const MIN_FOLLOWERS = 100_000;
 const MAX_FOLLOWERS = 2_000_000;
-const config = JSON.parse(readFileSync('./config.json', 'utf-8'));
+const DAILY_EMAIL_TARGET = 150;
+const DOC_HARVEST_LIMIT = parseInt(process.env.DOC_HARVEST_LIMIT || '300', 10);
+const DOC_HARVEST_BATCH_SIZE = 50;
+const config = JSON.parse(readFileSync(join(__dirname, 'config.json'), 'utf-8'));
 const QUALIFY_MODEL = config.qualifyModel || 'claude-haiku-4-5-20251001';
 const CONCURRENCY = 10;
 // No score — binary qualified yes/no
 const SIMILAR_ACTOR = 'thenetaji/instagram-related-user-scraper';
 const ENRICH_ACTOR = 'apify/instagram-profile-scraper';
 
-if (!existsSync('./output')) mkdirSync('./output', { recursive: true });
+const outputDir = join(__dirname, 'output');
+if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true });
 
 const ICP_PROMPT = config.icpPrompt;
 
@@ -886,10 +895,18 @@ async function dataOverCoffeeEmails(profiles) {
           const ytUrl = p._youtubeUrl || (p._youtubeUrls && p._youtubeUrls[0]) || '';
           const ytLower = ytUrl.toLowerCase();
           if (ytLower.includes(channelId) || (channelHandle && ytLower.includes(channelHandle.replace('@', '')))) {
+            p._emailSource = 'DataOverCoffee';
+            const validation = await validateEmailWithAI(item.Email, p);
+            if (!validation.valid || validation.type === 'platform' || validation.type === 'brand' || validation.type === 'spam') {
+              log(`\x1b[31m✗\x1b[0m @${p.username.padEnd(22)} ${item.Email} → REJECTED (${validation.type}: ${validation.reason})`);
+              break;
+            }
+
             p.email = item.Email;
             p.emailSource = 'dataovercoffee';
             p.emailDetail = `YouTube ${item.ChannelHandle || item.ChannelName} (${item.SubscriberCount?.toLocaleString()} subs)`;
-            p.emailIsAgency = isAgencyEmail(item.Email);
+            p.emailType = validation.type === 'management' ? 'management' : 'personal';
+            p.emailIsAgency = validation.type === 'management' || isAgencyEmail(item.Email);
             matched++;
 
             const agencyTag = p.emailIsAgency ? ' \x1b[33m⚠ AGENCY\x1b[0m' : '';
@@ -1036,11 +1053,6 @@ async function writeLeadsToSupabase(results) {
     // Extract and validate first name from multiple sources
     const nameResult = extractFirstName(r);
 
-    // If name isn't verified and lead has email, mark as needs_name_check instead of email_ready
-    if (!nameResult.verified && status === 'email_ready') {
-      status = 'needs_name_check';
-    }
-
     return {
       first_name: nameResult.firstName,
       first_name_verified: nameResult.verified,
@@ -1061,7 +1073,11 @@ async function writeLeadsToSupabase(results) {
       source_detail: r._source || '',
       batch_date: getTodayPT(),
       qualification_reasoning: r.reject_reason || 'qualified',
-      notes: r.emailType === 'management' ? 'EMAIL IS MANAGEMENT — use different sequence' : (r.emailDetail || '').includes('rejected') ? r.emailDetail : null,
+      notes: !nameResult.verified && status === 'email_ready'
+        ? 'First name needs VA check'
+        : r.emailType === 'management'
+          ? 'EMAIL IS MANAGEMENT — use different sequence'
+          : (r.emailDetail || '').includes('rejected') ? r.emailDetail : null,
     };
   });
 
@@ -1144,7 +1160,7 @@ function printSummary(results) {
   // Write CSV
   if (results.length > 0) {
     const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const csvFile = `output/scout_${ts}.csv`;
+    const csvFile = join(outputDir, `scout_${ts}.csv`);
     const headers = ['qualified', 'reject_reason', 'username', 'full_name', 'email', 'email_source', 'email_type', 'email_detail', 'followers', 'youtube_url', 'biography', 'website', 'source'];
     const rows = results.map(r => [
       r.qualified ? 'YES' : 'NO', r.reject_reason || '', r.username || '', r.fullName || '',
@@ -1247,7 +1263,8 @@ async function getTodayEmailCount() {
     .select('*', { count: 'exact', head: true })
     .eq('batch_date', today)
     .in('status', ['email_ready', 'mgmt_email'])
-    .eq('first_name_verified', true);
+    .not('email', 'is', null)
+    .neq('email', '');
   return count || 0;
 }
 
@@ -1273,7 +1290,7 @@ async function harvestDataOverCoffee() {
     .eq('status', 'youtube_only')
     .not('youtube_channel', 'is', null)
     .order('created_at', { ascending: true })
-    .limit(50); // batch of 50 max to control costs
+    .limit(DOC_HARVEST_LIMIT);
 
   if (!pendingLeads || pendingLeads.length === 0) {
     log('No pending DataOverCoffee leads to harvest.');
@@ -1282,14 +1299,18 @@ async function harvestDataOverCoffee() {
 
   logSection(`HARVEST: Re-checking ${pendingLeads.length} youtube_only leads via DataOverCoffee`);
 
-  const channels = pendingLeads
-    .map(l => l.youtube_channel)
-    .filter(Boolean);
-
-  if (channels.length === 0) return { harvested: 0, checked: 0 };
-
   let harvested = 0;
-  try {
+  let retired = 0;
+
+  for (let start = 0; start < pendingLeads.length; start += DOC_HARVEST_BATCH_SIZE) {
+    const batch = pendingLeads.slice(start, start + DOC_HARVEST_BATCH_SIZE);
+    const channels = batch
+      .map(l => l.youtube_channel)
+      .filter(Boolean);
+
+    if (channels.length === 0) continue;
+
+    try {
     const run = await apify.actor(DATAOVERCOFFEE_ACTOR).call(
       { channels },
       { waitSecs: 300 }
@@ -1309,7 +1330,7 @@ async function harvestDataOverCoffee() {
         const channelHandle = (item.ChannelHandle || '').toLowerCase().replace('@', '');
         const channelId = (item.ChannelId || '').toLowerCase();
 
-        const matching = pendingLeads.find(l => {
+        const matching = batch.find(l => {
           const ch = (l.youtube_channel || '').toLowerCase();
           return ch.includes(channelHandle) || ch.includes(channelId) ||
                  (channelHandle && channelHandle === ch.replace(/^@/, '').replace(/https?:\/\/.*\/@?/, ''));
@@ -1322,6 +1343,12 @@ async function harvestDataOverCoffee() {
 
         if (!validation.valid || validation.type === 'platform' || validation.type === 'brand' || validation.type === 'spam') {
           log(`  \x1b[31m✗\x1b[0m @${matching.instagram_handle} → ${item.Email} REJECTED (${validation.type})`);
+          await supabase.from('leads').update({
+            status: 'youtube_no_email',
+            notes: `DataOverCoffee returned rejected email (${validation.type}): ${validation.reason || item.Email}`,
+            enriched_at: new Date().toISOString(),
+          }).eq('id', matching.id);
+          retired++;
           continue;
         }
 
@@ -1335,20 +1362,19 @@ async function harvestDataOverCoffee() {
           _youtubeChannelName: item.ChannelName || null,
         });
 
-        const finalStatus = (!nameResult.verified && status === 'email_ready') ? 'needs_name_check' : status;
-
         await supabase.from('leads').update({
           email: item.Email,
           email_source: 'dataovercoffee',
-          status: finalStatus,
+          status,
           first_name: nameResult.verified ? nameResult.firstName : undefined, // only update if better
           first_name_verified: nameResult.verified || undefined,
+          notes: !nameResult.verified && status === 'email_ready' ? 'First name needs VA check' : undefined,
           batch_date: today, // move to today's batch since that's when the email became available
           enriched_at: new Date().toISOString(),
         }).eq('id', matching.id);
 
         harvested++;
-        log(`  \x1b[32m✓\x1b[0m @${matching.instagram_handle} → ${item.Email} (${finalStatus})`);
+        log(`  \x1b[32m✓\x1b[0m @${matching.instagram_handle} → ${item.Email} (${status})`);
       }
 
       // Mark leads where DOC confirmed NO email exists as youtube_no_email so we don't re-check forever
@@ -1356,7 +1382,7 @@ async function harvestDataOverCoffee() {
         const channelHandle = (item.ChannelHandle || '').toLowerCase().replace('@', '');
         const channelId = (item.ChannelId || '').toLowerCase();
 
-        const matching = pendingLeads.find(l => {
+        const matching = batch.find(l => {
           const ch = (l.youtube_channel || '').toLowerCase();
           return ch.includes(channelHandle) || ch.includes(channelId);
         });
@@ -1366,15 +1392,17 @@ async function harvestDataOverCoffee() {
             status: 'youtube_no_email',
             notes: `DataOverCoffee: ${item.Status || 'NO_EMAIL'} (checked ${getTodayPT()})`,
           }).eq('id', matching.id);
+          retired++;
           log(`  \x1b[90m✗\x1b[0m @${matching.instagram_handle} → no email available (marked, won't re-check)`);
         }
       }
     }
-  } catch (err) {
-    log(`DataOverCoffee harvest error: ${err.message}`);
+    } catch (err) {
+      log(`DataOverCoffee harvest error: ${err.message}`);
+    }
   }
 
-  log(`\nHarvest complete: ${harvested} new emails from ${pendingLeads.length} checked`);
+  log(`\nHarvest complete: ${harvested} new emails from ${pendingLeads.length} checked (${retired} cleared with no usable email)`);
   return { harvested, checked: pendingLeads.length };
 }
 
@@ -1495,7 +1523,7 @@ async function main() {
   const rawArgs = process.argv.slice(2);
   const isAuto = rawArgs.includes('--auto');
   const isDailyBatch = rawArgs.includes('--daily-batch');
-  const batchTarget = parseInt(rawArgs.find(a => a.startsWith('--target='))?.split('=')[1] || '100');
+  const batchTarget = parseInt(rawArgs.find(a => a.startsWith('--target='))?.split('=')[1] || String(DAILY_EMAIL_TARGET));
   const seedCount = parseInt(rawArgs.find(a => a.startsWith('--seeds='))?.split('=')[1] || '3');
   let args = rawArgs.filter(a => !a.startsWith('--')).map(a => a.replace(/^@/, ''));
 
@@ -1505,7 +1533,7 @@ async function main() {
     console.log('  node scout-test.js cbum davidlaid            # chain multiple seeds');
     console.log('  node scout-test.js --auto                    # auto-pick seeds from database');
     console.log('  node scout-test.js --auto --seeds=5          # auto-pick 5 seeds');
-    console.log('  node scout-test.js --daily-batch             # run until 100 emails for today');
+    console.log('  node scout-test.js --daily-batch             # run until 150 emails for today');
     console.log('  node scout-test.js --daily-batch --target=50 # custom target');
     console.log('');
     console.log('Examples:');
