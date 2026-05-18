@@ -1,0 +1,44 @@
+name: Daily lead generation
+
+on:
+  schedule:
+    # Bali / Makassar time: 02:00, 08:00, and 14:00.
+    - cron: "0 18,0,6 * * *"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "How many emailed leads to reach for today"
+        required: false
+        default: "150"
+
+concurrency:
+  group: daily-lead-generation
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    defaults:
+      run:
+        working-directory: lead-gen
+    env:
+      APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DOC_HARVEST_LIMIT: "300"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: lead-gen/package-lock.json
+
+      - run: npm ci
+
+      - name: Run daily batch
+        run: node scout-test.js --daily-batch --target=${{ inputs.target || '150' }}

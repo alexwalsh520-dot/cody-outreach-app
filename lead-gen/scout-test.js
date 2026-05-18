@@ -1552,10 +1552,20 @@ async function main() {
     console.log(`  DAILY BATCH — Target: ${batchTarget} emails`);
     console.log('='.repeat(70));
 
-    // Phase 1: Harvest emails from previous days' DataOverCoffee submissions
-    const { harvested: docHarvested, checked: docChecked } = await harvestDataOverCoffee();
-
     let currentCount = await getTodayEmailCount();
+    let docHarvested = 0;
+    let docChecked = 0;
+
+    // Phase 1: Harvest emails from previous DataOverCoffee submissions only if today still needs leads.
+    if (currentCount < batchTarget) {
+      const harvest = await harvestDataOverCoffee();
+      docHarvested = harvest.harvested;
+      docChecked = harvest.checked;
+      currentCount = await getTodayEmailCount();
+    } else {
+      console.log(`\n  Today already has ${currentCount}/${batchTarget} emails. Skipping DOC harvest and discovery.`);
+    }
+
     let cycleNum = 0;
     const maxCycles = 50; // safety limit — at ~6 emails/cycle, 50 cycles = ~300 email capacity
     let zeroNewCycles = 0; // track consecutive cycles that discover 0 new profiles
