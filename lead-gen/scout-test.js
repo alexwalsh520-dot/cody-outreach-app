@@ -1225,8 +1225,8 @@ function printSummary(results) {
 async function getAutoSeeds(count = 3) {
   if (!supabase) return [];
 
-  // Pick qualified leads with most followers that haven't been used as seeds recently
-  // These are real, validated IG handles — guaranteed to work
+  // Pick qualified leads that have not already been used as source seeds.
+  // Fallback to configured brand accounts so daily runs do not stall when the database pool is thin.
   const { data } = await supabase
     .from('leads')
     .select('instagram_handle, follower_count, source_detail')
@@ -1234,23 +1234,31 @@ async function getAutoSeeds(count = 3) {
     .gte('follower_count', MIN_FOLLOWERS)
     .lte('follower_count', MAX_FOLLOWERS)
     .order('follower_count', { ascending: false })
-    .limit(50);
+    .limit(500);
 
-  if (!data || data.length === 0) return [];
+  const rows = data || [];
+  const configuredSeeds = [
+    ...(config.seedAccounts || []),
+    ...(config.brandAccounts || []),
+  ].filter(Boolean);
 
   // Filter out handles that have already been used as seeds (source_detail = "similar:handle")
   const usedSeeds = new Set(
-    data.map(d => (d.source_detail || '').replace('similar:', '')).filter(Boolean)
+    rows.map(d => (d.source_detail || '').replace('similar:', '')).filter(Boolean)
   );
 
   // Pick leads that haven't been used as seeds yet
-  const unused = data.filter(d => !usedSeeds.has(d.instagram_handle));
-  // If all have been used, just pick random ones (their similar accounts will dedup anyway)
-  const pool = unused.length >= count ? unused : data;
+  const unused = rows
+    .map(d => d.instagram_handle)
+    .filter(handle => handle && !usedSeeds.has(handle));
+  const allKnown = rows.map(d => d.instagram_handle).filter(Boolean);
+  const pool = [...new Set([...unused, ...configuredSeeds, ...allKnown])];
+
+  if (pool.length === 0) return [];
 
   // Shuffle and pick
   const shuffled = pool.sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count).map(d => d.instagram_handle);
+  return shuffled.slice(0, count);
 }
 
 // ─── DAILY BATCH HELPERS ───────────────────────────────────────────────────
